@@ -1,0 +1,23 @@
+# 构建产物
+.gradle/
+build/
+.kotlin/
+*.iml
+.proj
+
+# 机器相关
+local.properties
+
+# 日志与临时
+*.log
+errors.txt
+
+# APK 归档留在文件系统，不进 git（每版十几 MB，会撑爆仓库）
+# 版本以 git tag 标记，可随时从源码重建
+dist/*.apk
+
+# 系统
+.DS_Store
+Thumbs.db
+
+# 保留：源码、docs/、README、交接文档

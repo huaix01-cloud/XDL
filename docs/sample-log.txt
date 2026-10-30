@@ -1,0 +1,186 @@
+=== XDL 运行日志 ===
+导出时间: 2026-10-28 15:12:03
+代理    : 10.0.2.2:7897
+设备    : Google sdk_gphone16k_x86_64 / Android 16 (API 36)
+日志文件: /storage/emulated/0/Android/data/com.yg.xdl/files/logs/xdl.log (16889 字节)
+========================================
+
+10-28 15:04:09.264 I/App: 启动 version=1.0 sdk=36 设备=Google sdk_gphone16k_x86_64
+10-28 15:04:09.282 I/App: 代理=10.0.2.2:7897
+10-28 15:04:11.930 I/UI: 开始解析: https://x.com/SpaceX/status/2115004840321659292
+10-28 15:04:17.072 W/Parse: id=2115004840321659292 fxtwitter 失败: connection closed
+10-28 15:04:22.170 E/Parse: id=2115004840321659292 两个解析源都失败 -> fx: connection closed | vx: connection closed
+10-28 15:04:22.185 E/UI: 解析异常: 解析失败 → fx: connection closed | vx: connection closed
+com.yg.xdl.ParseException: 解析失败 → fx: connection closed | vx: connection closed
+	at com.yg.xdl.XParser.fetch(XParser.kt:157)
+	at com.yg.xdl.MainActivityKt$Screen$analyze$1$res$1$1.invokeSuspend(MainActivity.kt:167)
+	at kotlin.coroutines.jvm.internal.BaseContinuationImpl.resumeWith(ContinuationImpl.kt:33)
+	at kotlinx.coroutines.DispatchedTask.run(DispatchedTask.kt:101)
+	at kotlinx.coroutines.internal.LimitedDispatcher$Worker.run(LimitedDispatcher.kt:113)
+	at kotlinx.coroutines.scheduling.TaskImpl.run(Tasks.kt:89)
+	at kotlinx.coroutines.scheduling.CoroutineScheduler.runSafely(CoroutineScheduler.kt:589)
+	at kotlinx.coroutines.scheduling.CoroutineScheduler$Worker.executeTask(CoroutineScheduler.kt:823)
+	at kotlinx.coroutines.scheduling.CoroutineScheduler$Worker.runWorker(CoroutineScheduler.kt:720)
+	at kotlinx.coroutines.scheduling.CoroutineScheduler$Worker.run(CoroutineScheduler.kt:707)
+10-28 15:05:29.175 I/App: 日志已导出: Download/XDL/xdl-log-20261028-150529.txt (1741 字节)
+10-28 15:06:13.280 I/App: 启动 version=1.0 sdk=36 设备=Google sdk_gphone16k_x86_64
+10-28 15:06:13.290 I/App: 代理=未设置（直连/VPN）
+10-28 15:06:26.241 I/UI: 开始解析: https://x.com/SpaceX/status/2115004840321659292
+10-28 15:06:26.267 W/HTTP: 代理不通（UnknownHostException: Unable to resolve host "10.0..22": No address associated with hostname），改直连重试: https://api.fxtwitter.com/2/status/2115004840321659292
+10-28 15:06:30.375 I/HTTP: GET https://api.fxtwitter.com/2/status/2115004840321659292 -> 200 3631B 4106ms 跳转0次
+10-28 15:06:30.382 I/Parse: id=2115004840321659292 fxtwitter 成功 媒体=2 种类=photo,photo 用时=4130ms
+10-28 15:06:30.387 I/UI: 解析完成: @SpaceX id=2115004840321659292 媒体=2
+10-28 15:06:55.674 I/UI: 开始下载: @SpaceX id=2115004840321659292 选中=2 个（索引 [0, 1]）
+10-28 15:06:55.752 I/DL: 开始 idx=0 [image/jpeg] Pictures/XDL/SpaceX_2115004840321659292_1_1.jpg <- https://pbs.twimg.com/media/HVoBisTXUAAPgMy.jpg?name=orig
+10-28 15:06:55.758 E/DL: 失败 idx=0 SpaceX_2115004840321659292_1_1.jpg <- https://pbs.twimg.com/media/HVoBisTXUAAPgMy.jpg?name=orig
+java.net.UnknownHostException: Unable to resolve host "10.0..22": No address associated with hostname
+	at java.net.Inet6AddressImpl.lookupHostByName(Inet6AddressImpl.java:124)
+	at java.net.Inet6AddressImpl.lookupAllHostAddr(Inet6AddressImpl.java:103)
+	at java.net.InetAddress.getAllByName(InetAddress.java:1152)
+	at com.android.okhttp.Dns$1.lookup(Dns.java:41)
+	at com.android.okhttp.internal.http.RouteSelector.resetNextInetSocketAddress(RouteSelector.java:178)
+	at com.android.okhttp.internal.http.RouteSelector.nextProxy(RouteSelector.java:144)
+	at com.android.okhttp.internal.http.RouteSelector.next(RouteSelector.java:86)
+	at com.android.okhttp.internal.http.StreamAllocation.findConnection(StreamAllocation.java:176)
+	at com.android.okhttp.internal.http.StreamAllocation.findHealthyConnection(StreamAllocation.java:128)
+	at com.android.okhttp.internal.http.StreamAllocation.newStream(StreamAllocation.java:97)
+	at com.android.okhttp.internal.http.HttpEngine.connect(HttpEngine.java:289)
+	at com.android.okhttp.internal.http.HttpEngine.sendRequest(HttpEngine.java:232)
+	at com.android.okhttp.internal.huc.HttpURLConnectionImpl.execute(HttpURLConnectionImpl.java:465)
+	at com.android.okhttp.internal.huc.HttpURLConnectionImpl.getResponse(HttpURLConnectionImpl.java:411)
+	at com.android.okhttp.internal.huc.HttpURLConnectionImpl.getResponseCode(HttpURLConnectionImpl.java:542)
+	at com.android.okhttp.internal.huc.DelegatingHttpsURLConnection.getResponseCode(DelegatingHttpsURLConnection.java:106)
+	at com.android.okhttp.internal.huc.HttpsURLConnectionImpl.getResponseCode(HttpsURLConnectionImpl.java:30)
+	at com.yg.xdl.Downloader.doSave(Downloader.kt:90)
+	at com.yg.xdl.Downloader.save(Downloader.kt:24)
+	at com.yg.xdl.MainActivityKt$Screen$download$1$res$1$1.invokeSuspend(MainActivity.kt:207)
+	at kotlin.coroutines.jvm.internal.BaseContinuationImpl.resumeWith(ContinuationImpl.kt:33)
+	at kotlinx.coroutines.DispatchedTask.run(DispatchedTask.kt:101)
+	at kotlinx.coroutines.internal.LimitedDispatcher$Worker.run(LimitedDispatcher.kt:113)
+	at kotlinx.coroutines.scheduling.TaskImpl.run(Tasks.kt:89)
+	at kotlinx.coroutines.scheduling.CoroutineScheduler.runSafely(CoroutineScheduler.kt:589)
+	at kotlinx.coroutines.scheduling.CoroutineScheduler$Worker.executeTask(CoroutineScheduler.kt:823)
+	at kotlinx.coroutines.scheduling.CoroutineScheduler$Worker.runWorker(CoroutineScheduler.kt:720)
+	at kotlinx.coroutines.scheduling.CoroutineScheduler$Worker.run(CoroutineScheduler.kt:707)
+10-28 15:06:55.825 W/DL: 代理不通（UnknownHostException: Unable to resolve host "10.0..22": No address associated with hostname），改直连重试 idx=0
+10-28 15:06:55.949 I/DL: 开始 idx=0 [image/jpeg] Pictures/XDL/SpaceX_2115004840321659292_1_1.jpg <- https://pbs.twimg.com/media/HVoBisTXUAAPgMy.jpg?name=orig
+10-28 15:07:16.105 E/DL: 失败 idx=0 SpaceX_2115004840321659292_1_1.jpg <- https://pbs.twimg.com/media/HVoBisTXUAAPgMy.jpg?name=orig
+java.net.SocketTimeoutException: failed to connect to pbs.twimg.com/31.13.95.48 (port 443) from /10.0.2.15 (port 41838) after 20000ms
+	at libcore.io.IoBridge.connectErrno(IoBridge.java:235)
+	at libcore.io.IoBridge.connect(IoBridge.java:179)
+	at java.net.PlainSocketImpl.socketConnect(PlainSocketImpl.java:142)
+	at java.net.AbstractPlainSocketImpl.doConnect(AbstractPlainSocketImpl.java:390)
+	at java.net.AbstractPlainSocketImpl.connectToAddress(AbstractPlainSocketImpl.java:230)
+	at java.net.AbstractPlainSocketImpl.connect(AbstractPlainSocketImpl.java:212)
+	at java.net.SocksSocketImpl.connect(SocksSocketImpl.java:436)
+	at java.net.Socket.connect(Socket.java:646)
+	at com.android.okhttp.internal.Platform.connectSocket(Platform.java:182)
+	at com.android.okhttp.internal.io.RealConnection.connectSocket(RealConnection.java:145)
+	at com.android.okhttp.internal.io.RealConnection.connect(RealConnection.java:116)
+	at com.android.okhttp.internal.http.StreamAllocation.findConnection(StreamAllocation.java:186)
+	at com.android.okhttp.internal.http.StreamAllocation.findHealthyConnection(StreamAllocation.java:128)
+	at com.android.okhttp.internal.http.StreamAllocation.newStream(StreamAllocation.java:97)
+	at com.android.okhttp.internal.http.HttpEngine.connect(HttpEngine.java:289)
+	at com.android.okhttp.internal.http.HttpEngine.sendRequest(HttpEngine.java:232)
+	at com.android.okhttp.internal.huc.HttpURLConnectionImpl.execute(HttpURLConnectionImpl.java:465)
+	at com.android.okhttp.internal.huc.HttpURLConnectionImpl.getResponse(HttpURLConnectionImpl.java:411)
+	at com.android.okhttp.internal.huc.HttpURLConnectionImpl.getResponseCode(HttpURLConnectionImpl.java:542)
+	at com.android.okhttp.internal.huc.DelegatingHttpsURLConnection.getResponseCode(DelegatingHttpsURLConnection.java:106)
+	at com.android.okhttp.internal.huc.HttpsURLConnectionImpl.getResponseCode(HttpsURLConnectionImpl.java:30)
+	at com.yg.xdl.Downloader.doSave(Downloader.kt:90)
+	at com.yg.xdl.Downloader.save(Downloader.kt:31)
+	at com.yg.xdl.MainActivityKt$Screen$download$1$res$1$1.invokeSuspend(MainActivity.kt:207)
+	at kotlin.coroutines.jvm.internal.BaseContinuationImpl.resumeWith(ContinuationImpl.kt:33)
+	at kotlinx.coroutines.DispatchedTask.run(DispatchedTask.kt:101)
+	at kotlinx.coroutines.internal.LimitedDispatcher$Worker.run(LimitedDispatcher.kt:113)
+	at kotlinx.coroutines.scheduling.TaskImpl.run(Tasks.kt:89)
+	at kotlinx.coroutines.scheduling.CoroutineScheduler.runSafely(CoroutineScheduler.kt:589)
+	at kotlinx.coroutines.scheduling.CoroutineScheduler$Worker.executeTask(CoroutineScheduler.kt:823)
+	at kotlinx.coroutines.scheduling.CoroutineScheduler$Worker.runWorker(CoroutineScheduler.kt:720)
+	at kotlinx.coroutines.scheduling.CoroutineScheduler$Worker.run(CoroutineScheduler.kt:707)
+10-28 15:07:16.147 I/DL: 开始 idx=1 [image/jpeg] Pictures/XDL/SpaceX_2115004840321659292_2_1.jpg <- https://pbs.twimg.com/media/HVoBmcSWoAA5lL1.jpg?name=orig
+10-28 15:07:16.161 E/DL: 失败 idx=1 SpaceX_2115004840321659292_2_1.jpg <- https://pbs.twimg.com/media/HVoBmcSWoAA5lL1.jpg?name=orig
+java.net.UnknownHostException: Unable to resolve host "10.0..22": No address associated with hostname
+	at java.net.Inet6AddressImpl.lookupHostByName(Inet6AddressImpl.java:124)
+	at java.net.Inet6AddressImpl.lookupAllHostAddr(Inet6AddressImpl.java:103)
+	at java.net.InetAddress.getAllByName(InetAddress.java:1152)
+	at com.android.okhttp.Dns$1.lookup(Dns.java:41)
+	at com.android.okhttp.internal.http.RouteSelector.resetNextInetSocketAddress(RouteSelector.java:178)
+	at com.android.okhttp.internal.http.RouteSelector.nextProxy(RouteSelector.java:144)
+	at com.android.okhttp.internal.http.RouteSelector.next(RouteSelector.java:86)
+	at com.android.okhttp.internal.http.StreamAllocation.findConnection(StreamAllocation.java:176)
+	at com.android.okhttp.internal.http.StreamAllocation.findHealthyConnection(StreamAllocation.java:128)
+	at com.android.okhttp.internal.http.StreamAllocation.newStream(StreamAllocation.java:97)
+	at com.android.okhttp.internal.http.HttpEngine.connect(HttpEngine.java:289)
+	at com.android.okhttp.internal.http.HttpEngine.sendRequest(HttpEngine.java:232)
+	at com.android.okhttp.internal.huc.HttpURLConnectionImpl.execute(HttpURLConnectionImpl.java:465)
+	at com.android.okhttp.internal.huc.HttpURLConnectionImpl.getResponse(HttpURLConnectionImpl.java:411)
+	at com.android.okhttp.internal.huc.HttpURLConnectionImpl.getResponseCode(HttpURLConnectionImpl.java:542)
+	at com.android.okhttp.internal.huc.DelegatingHttpsURLConnection.getResponseCode(DelegatingHttpsURLConnection.java:106)
+	at com.android.okhttp.internal.huc.HttpsURLConnectionImpl.getResponseCode(HttpsURLConnectionImpl.java:30)
+	at com.yg.xdl.Downloader.doSave(Downloader.kt:90)
+	at com.yg.xdl.Downloader.save(Downloader.kt:24)
+	at com.yg.xdl.MainActivityKt$Screen$download$1$res$1$1.invokeSuspend(MainActivity.kt:207)
+	at kotlin.coroutines.jvm.internal.BaseContinuationImpl.resumeWith(ContinuationImpl.kt:33)
+	at kotlinx.coroutines.DispatchedTask.run(DispatchedTask.kt:101)
+	at kotlinx.coroutines.internal.LimitedDispatcher$Worker.run(LimitedDispatcher.kt:113)
+	at kotlinx.coroutines.scheduling.TaskImpl.run(Tasks.kt:89)
+	at kotlinx.coroutines.scheduling.CoroutineScheduler.runSafely(CoroutineScheduler.kt:589)
+	at kotlinx.coroutines.scheduling.CoroutineScheduler$Worker.executeTask(CoroutineScheduler.kt:823)
+	at kotlinx.coroutines.scheduling.CoroutineScheduler$Worker.runWorker(CoroutineScheduler.kt:720)
+	at kotlinx.coroutines.scheduling.CoroutineScheduler$Worker.run(CoroutineScheduler.kt:707)
+10-28 15:07:16.192 W/DL: 代理不通（UnknownHostException: Unable to resolve host "10.0..22": No address associated with hostname），改直连重试 idx=1
+10-28 15:07:16.207 I/DL: 开始 idx=1 [image/jpeg] Pictures/XDL/SpaceX_2115004840321659292_2_1.jpg <- https://pbs.twimg.com/media/HVoBmcSWoAA5lL1.jpg?name=orig
+10-28 15:07:36.674 E/DL: 失败 idx=1 SpaceX_2115004840321659292_2_1.jpg <- https://pbs.twimg.com/media/HVoBmcSWoAA5lL1.jpg?name=orig
+java.net.SocketTimeoutException: failed to connect to pbs.twimg.com/31.13.95.48 (port 443) from /10.0.2.15 (port 48126) after 20000ms
+	at libcore.io.IoBridge.connectErrno(IoBridge.java:235)
+	at libcore.io.IoBridge.connect(IoBridge.java:179)
+	at java.net.PlainSocketImpl.socketConnect(PlainSocketImpl.java:142)
+	at java.net.AbstractPlainSocketImpl.doConnect(AbstractPlainSocketImpl.java:390)
+	at java.net.AbstractPlainSocketImpl.connectToAddress(AbstractPlainSocketImpl.java:230)
+	at java.net.AbstractPlainSocketImpl.connect(AbstractPlainSocketImpl.java:212)
+	at java.net.SocksSocketImpl.connect(SocksSocketImpl.java:436)
+	at java.net.Socket.connect(Socket.java:646)
+	at com.android.okhttp.internal.Platform.connectSocket(Platform.java:182)
+	at com.android.okhttp.internal.io.RealConnection.connectSocket(RealConnection.java:145)
+	at com.android.okhttp.internal.io.RealConnection.connect(RealConnection.java:116)
+	at com.android.okhttp.internal.http.StreamAllocation.findConnection(StreamAllocation.java:186)
+	at com.android.okhttp.internal.http.StreamAllocation.findHealthyConnection(StreamAllocation.java:128)
+	at com.android.okhttp.internal.http.StreamAllocation.newStream(StreamAllocation.java:97)
+	at com.android.okhttp.internal.http.HttpEngine.connect(HttpEngine.java:289)
+	at com.android.okhttp.internal.http.HttpEngine.sendRequest(HttpEngine.java:232)
+	at com.android.okhttp.internal.huc.HttpURLConnectionImpl.execute(HttpURLConnectionImpl.java:465)
+	at com.android.okhttp.internal.huc.HttpURLConnectionImpl.getResponse(HttpURLConnectionImpl.java:411)
+	at com.android.okhttp.internal.huc.HttpURLConnectionImpl.getResponseCode(HttpURLConnectionImpl.java:542)
+	at com.android.okhttp.internal.huc.DelegatingHttpsURLConnection.getResponseCode(DelegatingHttpsURLConnection.java:106)
+	at com.android.okhttp.internal.huc.HttpsURLConnectionImpl.getResponseCode(HttpsURLConnectionImpl.java:30)
+	at com.yg.xdl.Downloader.doSave(Downloader.kt:90)
+	at com.yg.xdl.Downloader.save(Downloader.kt:31)
+	at com.yg.xdl.MainActivityKt$Screen$download$1$res$1$1.invokeSuspend(MainActivity.kt:207)
+	at kotlin.coroutines.jvm.internal.BaseContinuationImpl.resumeWith(ContinuationImpl.kt:33)
+	at kotlinx.coroutines.DispatchedTask.run(DispatchedTask.kt:101)
+	at kotlinx.coroutines.internal.LimitedDispatcher$Worker.run(LimitedDispatcher.kt:113)
+	at kotlinx.coroutines.scheduling.TaskImpl.run(Tasks.kt:89)
+	at kotlinx.coroutines.scheduling.CoroutineScheduler.runSafely(CoroutineScheduler.kt:589)
+	at kotlinx.coroutines.scheduling.CoroutineScheduler$Worker.executeTask(CoroutineScheduler.kt:823)
+	at kotlinx.coroutines.scheduling.CoroutineScheduler$Worker.runWorker(CoroutineScheduler.kt:720)
+	at kotlinx.coroutines.scheduling.CoroutineScheduler$Worker.run(CoroutineScheduler.kt:707)
+10-28 15:07:36.695 W/UI: 下载结束: 成功 0 个，失败 failed to connect to pbs.twimg.com/31.13.95.48 (port 443) from /10.0.2.15 (port 48126) after 20000ms
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               10-28 15:10:24.270 I/App: 启动 version=1.0 sdk=36 设备=Google sdk_gphone16k_x86_64
+10-28 15:10:24.301 I/App: 代理=10.0.2.2:7897
+10-28 15:10:29.091 I/UI: 开始解析: https://x.com/SpaceX/status/2115004840321659292
+10-28 15:10:31.312 I/HTTP: GET https://api.fxtwitter.com/2/status/2115004840321659292 -> 200 3631B 2142ms 跳转0次
+10-28 15:10:31.363 I/Parse: id=2115004840321659292 fxtwitter 成功 媒体=2 种类=photo,photo 用时=2192ms
+10-28 15:10:31.391 I/UI: 解析完成: @SpaceX id=2115004840321659292 媒体=2
+10-28 15:10:39.056 I/App: 启动 version=1.0 sdk=36 设备=Google sdk_gphone16k_x86_64
+10-28 15:10:39.060 I/App: 代理=10.0.2.2:7897
+10-28 15:10:39.377 I/UI: 开始解析: https://x.com/SpaceX/status/2115004840321659292
+10-28 15:10:39.806 I/HTTP: GET https://api.fxtwitter.com/2/status/2115004840321659292 -> 200 3631B 413ms 跳转0次
+10-28 15:10:39.825 I/Parse: id=2115004840321659292 fxtwitter 成功 媒体=2 种类=photo,photo 用时=432ms
+10-28 15:10:39.851 I/UI: 解析完成: @SpaceX id=2115004840321659292 媒体=2
+10-28 15:10:54.648 I/UI: 开始下载: @SpaceX id=2115004840321659292 选中=2 个（索引 [0, 1]）
+10-28 15:10:54.739 I/DL: 开始 idx=0 [image/jpeg] Pictures/XDL/SpaceX_2115004840321659292_1_1.jpg <- https://pbs.twimg.com/media/HVoBisTXUAAPgMy.jpg?name=orig
+10-28 15:10:56.058 I/DL: 完成 idx=0 SpaceX_2115004840321659292_1_1.jpg 写入=1784334 服务器=1784334 完全一致 用时=1320ms 落盘=Pictures/XDL
+10-28 15:10:56.138 I/DL: 开始 idx=1 [image/jpeg] Pictures/XDL/SpaceX_2115004840321659292_2_1.jpg <- https://pbs.twimg.com/media/HVoBmcSWoAA5lL1.jpg?name=orig
+10-28 15:10:56.775 I/DL: 完成 idx=1 SpaceX_2115004840321659292_2_1.jpg 写入=1946838 服务器=1946838 完全一致 用时=637ms 落盘=Pictures/XDL
+10-28 15:10:56.776 I/UI: 下载结束: 成功 2 个
