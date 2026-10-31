@@ -26,6 +26,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.ArrowForward
 import androidx.compose.material.icons.outlined.Delete
 import androidx.compose.material.icons.outlined.Info
+import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.outlined.Menu
 import androidx.compose.material.icons.outlined.Refresh
 import androidx.compose.material.icons.outlined.Send
@@ -252,43 +253,8 @@ fun HomeScreen(
                     shape = RoundedCornerShape(20.dp)
                 ) {
                     Column(Modifier.padding(14.dp)) {
-                        // V5：contentAlign / textAlign = end
-                        Row(
-                            Modifier.fillMaxWidth(),
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.End
-                        ) {
-                            Column(horizontalAlignment = Alignment.End) {
-                                Text(
-                                    t.authorName.ifBlank { t.handle },
-                                    style = MaterialTheme.typography.titleMedium,
-                                    maxLines = 1,
-                                    overflow = TextOverflow.Ellipsis,
-                                    textAlign = TextAlign.End
-                                )
-                                Text(
-                                    "@${t.handle}",
-                                    style = MaterialTheme.typography.labelSmall,
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                    textAlign = TextAlign.End
-                                )
-                            }
-                            Spacer(Modifier.width(10.dp))
-                            Avatar(t.avatar)
-                        }
-                        if (t.text.isNotBlank()) {
-                            Spacer(Modifier.height(8.dp))
-                            Text(
-                                t.text,
-                                style = MaterialTheme.typography.bodyMedium,
-                                maxLines = 4,
-                                overflow = TextOverflow.Ellipsis,
-                                textAlign = TextAlign.End,
-                                modifier = Modifier.fillMaxWidth()
-                            )
-                        }
+                        // V5：媒体在上，文字与作者名在右下（contentAlign/textAlign = end）
                         if (t.media.isNotEmpty()) {
-                            Spacer(Modifier.height(10.dp))
                             t.media.withIndex().toList().chunked(2).forEach { rowItems ->
                                 Row(
                                     Modifier.fillMaxWidth(),
@@ -313,18 +279,45 @@ fun HomeScreen(
                                 Spacer(Modifier.height(8.dp))
                             }
                         }
+                        Row(
+                            Modifier.fillMaxWidth(),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.End
+                        ) {
+                            Column(
+                                Modifier.weight(1f),
+                                horizontalAlignment = Alignment.End
+                            ) {
+                                if (t.text.isNotBlank()) {
+                                    Text(
+                                        t.text,
+                                        style = MaterialTheme.typography.bodyMedium,
+                                        maxLines = 3,
+                                        overflow = TextOverflow.Ellipsis,
+                                        textAlign = TextAlign.End
+                                    )
+                                }
+                                Text(
+                                    "@${t.handle}",
+                                    style = MaterialTheme.typography.labelSmall,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                    textAlign = TextAlign.End
+                                )
+                            }
+                            Spacer(Modifier.width(10.dp))
+                            Avatar(t.avatar)
+                        }
                     }
                 }
 
                 Spacer(Modifier.height(14.dp))
             }
 
-            // ---------------- 链接输入
+            // ---------------- 链接输入（V5：框内只有图标，无占位文字）
             OutlinedTextField(
                 value = st.url,
                 onValueChange = { st.url = it },
                 modifier = Modifier.fillMaxWidth(),
-                placeholder = { Text("粘贴推文链接", style = MaterialTheme.typography.bodyMedium) },
                 leadingIcon = {
                     Icon(
                         ImageVector.vectorResource(R.drawable.ic_library_books),
@@ -333,7 +326,7 @@ fun HomeScreen(
                 },
                 supportingText = {
                     Text(
-                        "粘贴 x.com/xxx/status/123456 或 t.co 短链",
+                        "粘贴x.com/xxx/status/123456或t.co短链",
                         style = MaterialTheme.typography.labelSmall
                     )
                 },
@@ -408,23 +401,25 @@ fun HomeScreen(
 
             Spacer(Modifier.height(12.dp))
 
-            // ---------------- 视频画质 + 保持最佳（V5：画质在左，勾选在右）
+            // ---------------- 视频画质 + 保持最佳（V5：画质 182 宽，label 在框外下方）
             Row(
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                verticalAlignment = Alignment.Top,
+                horizontalArrangement = Arrangement.spacedBy(10.dp)
             ) {
                 SelectField(
-                    label = "视频画质",
-                    value = if (Settings.keepBest) "最佳画质" else Settings.quality.label,
+                    label = "",
+                    value = "",
                     options = Quality.entries.map { it.label },
                     onSelect = { i -> Settings.updateQuality(Quality.entries[i]) },
                     selectedIndex = Quality.entries.indexOf(Settings.quality),
-                    modifier = Modifier.width(176.dp),
-                    enabled = !Settings.keepBest
+                    modifier = Modifier.width(157.dp),
+                    enabled = !Settings.keepBest,
+                    leadingIcon = Icons.Filled.PlayArrow,
+                    supporting = "视频画质"
                 )
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier.weight(1f)
+                    modifier = Modifier.weight(1f).padding(top = 6.dp)
                 ) {
                     Checkbox(
                         checked = Settings.keepBest,
@@ -439,19 +434,43 @@ fun HomeScreen(
                 }
             }
 
-            Spacer(Modifier.height(8.dp))
+            Spacer(Modifier.height(4.dp))
 
-            // ---------------- 平台（V5：单独一行）
-            SelectField(
-                label = "平台",
-                value = Settings.platform.label,
-                options = Platform.entries.map { it.label },
-                onSelect = { i -> Settings.updatePlatform(Platform.entries[i]) },
-                selectedIndex = Platform.entries.indexOf(Settings.platform),
-                modifier = Modifier.width(180.dp)
-            )
+            // ---------------- 平台(180) + 下载（V5：同一行，下载占剩余宽度）
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(10.dp)
+            ) {
+                SelectField(
+                    label = "平台",
+                    value = Settings.platform.label,
+                    options = Platform.entries.map { it.label },
+                    onSelect = { i -> Settings.updatePlatform(Platform.entries[i]) },
+                    selectedIndex = Platform.entries.indexOf(Settings.platform),
+                    modifier = Modifier.width(130.dp)
+                )
+                SplitActionButton(
+                    label = "下载",
+                    icon = Icons.Outlined.Send,
+                    onClick = { downloadSelected() },
+                    actions = listOf(
+                        ImageVector.vectorResource(R.drawable.ic_done_all) to "全选",
+                        Icons.Outlined.ArrowForward to "查看下载"
+                    ),
+                    onAction = { label ->
+                        when (label) {
+                            "全选" -> st.tweet?.let { tt -> st.selected = tt.media.indices.toSet() }
+                            "查看下载" -> onOpenTasks()
+                        }
+                    },
+                    modifier = Modifier.weight(1f),
+                    enabled = st.tweet != null,
+                    tonal = st.tweet == null
+                )
+            }
 
             if (Settings.platform != Platform.X) {
+                Spacer(Modifier.height(8.dp))
                 Surface(
                     shape = MaterialTheme.shapes.medium,
                     color = MaterialTheme.colorScheme.secondaryContainer,
@@ -466,7 +485,6 @@ fun HomeScreen(
                         )
                     }
                 }
-                Spacer(Modifier.height(8.dp))
             }
 
             if (st.error.isNotBlank()) {
@@ -478,39 +496,10 @@ fun HomeScreen(
                 )
             }
 
-            // V5：下载按钮常驻，没解析结果时用浅色（tonal）
-            Spacer(Modifier.height(14.dp))
-            SplitActionButton(
-                label = if (st.selected.isEmpty()) "下载" else "下载 ${st.selected.size} 个",
-                icon = Icons.Outlined.Send,
-                onClick = { downloadSelected() },
-                actions = listOf(
-                    ImageVector.vectorResource(R.drawable.ic_done_all) to "全选",
-                    Icons.Outlined.ArrowForward to "查看下载"
-                ),
-                onAction = { label ->
-                    when (label) {
-                        "全选" -> st.tweet?.let { tt -> st.selected = tt.media.indices.toSet() }
-                        "查看下载" -> onOpenTasks()
-                    }
-                },
-                modifier = Modifier.fillMaxWidth(),
-                enabled = st.tweet != null,
-                tonal = st.tweet == null
-            )
-
-            // ---------------- 解析中：环形百分比
+            // ---------------- 解析中：环形百分比（V5：左下角）
             if (st.loading) {
-                Spacer(Modifier.height(20.dp))
-                Row(
-                    Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.Center,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    RingProgress(progress = st.parseProgress, size = 60.dp, stroke = 5.dp)
-                    Spacer(Modifier.width(14.dp))
-                    Text("解析中…", style = MaterialTheme.typography.bodyMedium)
-                }
+                Spacer(Modifier.height(16.dp))
+                RingProgress(progress = st.parseProgress, size = 60.dp, stroke = 5.dp)
             }
 
             if (st.status.isNotBlank()) {

@@ -137,54 +137,68 @@ fun SelectField(
     modifier: Modifier = Modifier,
     leadingIcon: ImageVector? = null,
     enabled: Boolean = true,
-    selectedIndex: Int = -1
+    selectedIndex: Int = -1,
+    /** 显示在控件下方的说明（V5 里「视频画质」label 在框外下方） */
+    supporting: String? = null
 ) {
     var open by remember { mutableStateOf(false) }
     val shape = MaterialTheme.shapes.medium
-    Box(modifier) {
-        androidx.compose.material3.OutlinedButton(
-            onClick = { open = true },
-            enabled = enabled,
-            shape = shape,
-            modifier = Modifier.fillMaxWidth(),
-            contentPadding = PaddingValues(horizontal = 12.dp, vertical = 8.dp)
-        ) {
-            if (leadingIcon != null) {
-                Icon(leadingIcon, null, Modifier.size(18.dp))
-                Spacer(Modifier.width(6.dp))
+    Column(modifier) {
+        Box {
+            androidx.compose.material3.OutlinedButton(
+                onClick = { open = true },
+                enabled = enabled,
+                shape = shape,
+                modifier = Modifier.fillMaxWidth(),
+                contentPadding = PaddingValues(horizontal = 12.dp, vertical = 8.dp)
+            ) {
+                if (leadingIcon != null) {
+                    Icon(leadingIcon, null, Modifier.size(18.dp))
+                    Spacer(Modifier.width(6.dp))
+                }
+                Column(Modifier.weight(1f)) {
+                    if (label.isNotBlank()) {
+                        Text(
+                            label,
+                            style = MaterialTheme.typography.labelSmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                    if (value.isNotBlank()) {
+                        Text(
+                            value,
+                            style = MaterialTheme.typography.bodyMedium,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis
+                        )
+                    }
+                }
+                Icon(Icons.Outlined.ArrowDropDown, null, Modifier.size(20.dp))
             }
-            Column(Modifier.weight(1f)) {
-                if (label.isNotBlank()) {
-                    Text(
-                        label,
-                        style = MaterialTheme.typography.labelSmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
+            DropdownMenu(expanded = open, onDismissRequest = { open = false }) {
+                options.forEachIndexed { i, s ->
+                    DropdownMenuItem(
+                        text = {
+                            Text(
+                                s,
+                                fontWeight = if (i == selectedIndex) FontWeight.SemiBold else FontWeight.Normal
+                            )
+                        },
+                        onClick = {
+                            open = false
+                            onSelect(i)
+                        }
                     )
                 }
-                Text(
-                    value,
-                    style = MaterialTheme.typography.bodyMedium,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis
-                )
             }
-            Icon(Icons.Outlined.ArrowDropDown, null, Modifier.size(20.dp))
         }
-        DropdownMenu(expanded = open, onDismissRequest = { open = false }) {
-            options.forEachIndexed { i, s ->
-                DropdownMenuItem(
-                    text = {
-                        Text(
-                            s,
-                            fontWeight = if (i == selectedIndex) FontWeight.SemiBold else FontWeight.Normal
-                        )
-                    },
-                    onClick = {
-                        open = false
-                        onSelect(i)
-                    }
-                )
-            }
+        if (supporting != null) {
+            Text(
+                supporting,
+                style = MaterialTheme.typography.labelSmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.padding(start = 14.dp, top = 4.dp)
+            )
         }
     }
 }
@@ -211,7 +225,8 @@ fun SplitActionButton(
                 onClick = onClick,
                 enabled = enabled,
                 shape = leftShape,
-                modifier = Modifier.weight(1f).height(52.dp)
+                modifier = Modifier.weight(1f).height(52.dp),
+                contentPadding = PaddingValues(horizontal = 10.dp)
             ) {
                 Icon(icon, null, Modifier.size(20.dp))
                 Spacer(Modifier.width(8.dp))
@@ -222,7 +237,8 @@ fun SplitActionButton(
                 onClick = onClick,
                 enabled = enabled,
                 shape = leftShape,
-                modifier = Modifier.weight(1f).height(52.dp)
+                modifier = Modifier.weight(1f).height(52.dp),
+                contentPadding = PaddingValues(horizontal = 10.dp)
             ) {
                 Icon(icon, null, Modifier.size(20.dp))
                 Spacer(Modifier.width(8.dp))
@@ -235,7 +251,7 @@ fun SplitActionButton(
                     onClick = { open = true },
                     enabled = enabled,
                     shape = rightShape,
-                    modifier = Modifier.height(52.dp).width(52.dp),
+                    modifier = Modifier.height(52.dp).width(44.dp),
                     contentPadding = PaddingValues(0.dp)
                 ) { Icon(Icons.Outlined.ArrowDropDown, null, Modifier.size(24.dp)) }
             } else {
@@ -243,7 +259,7 @@ fun SplitActionButton(
                     onClick = { open = true },
                     enabled = enabled,
                     shape = rightShape,
-                    modifier = Modifier.height(52.dp).width(52.dp),
+                    modifier = Modifier.height(52.dp).width(44.dp),
                     contentPadding = PaddingValues(0.dp)
                 ) { Icon(Icons.Outlined.ArrowDropDown, null, Modifier.size(24.dp)) }
             }
