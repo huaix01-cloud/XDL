@@ -5,6 +5,7 @@ import com.yg.xdl.R
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -391,6 +392,67 @@ fun SectionCard(modifier: Modifier = Modifier, content: @Composable () -> Unit) 
     }
 }
 
+/**
+ * 设置页的列表行。
+ *
+ * 6canvas 里「下载通知 / 仅 WiFi / 文件保存位置 / 最大下载数量 / 下载平台选择」
+ * 是**同一个 listItem 组件**，只有右侧控件不同（Switch / chevron / 什么都没有）。
+ * 所以必须共用同一套内边距和图标尺寸 —— 之前拆成两个函数写，
+ * 带开关的两行少了 6dp 水平内边距，图标和文字整体比下面三行偏左。
+ */
+@Composable
+fun SettingListItem(
+    icon: ImageVector?,
+    title: String,
+    subtitle: String? = null,
+    onClick: (() -> Unit)? = null,
+    trailing: (@Composable () -> Unit)? = null
+) {
+    Row(
+        Modifier
+            .fillMaxWidth()
+            .then(if (onClick != null) Modifier.clickable { onClick() } else Modifier)
+            .padding(horizontal = 6.dp, vertical = 8.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        if (icon != null) {
+            Box(
+                Modifier
+                    .size(32.dp)
+                    .clip(CircleShape)
+                    .background(MaterialTheme.colorScheme.primaryContainer),
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(
+                    icon,
+                    contentDescription = null,
+                    modifier = Modifier.size(18.dp),
+                    tint = MaterialTheme.colorScheme.onPrimaryContainer
+                )
+            }
+            Spacer(Modifier.width(12.dp))
+        }
+        Column(Modifier.weight(1f)) {
+            Text(
+                title,
+                style = MaterialTheme.typography.bodyLarge.copy(lineHeight = 20.sp),
+                fontWeight = FontWeight.Medium
+            )
+            if (subtitle != null) {
+                Text(
+                    subtitle,
+                    style = MaterialTheme.typography.labelSmall.copy(lineHeight = 15.sp),
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
+                )
+            }
+        }
+        trailing?.invoke()
+    }
+}
+
+/** 带开关的列表行：排版完全走 [SettingListItem]，只换右侧控件 */
 @Composable
 fun SettingSwitchRow(
     title: String,
@@ -399,37 +461,10 @@ fun SettingSwitchRow(
     onCheckedChange: (Boolean) -> Unit,
     icon: ImageVector? = null
 ) {
-    Row(
-        Modifier.fillMaxWidth().padding(vertical = 10.dp),
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        if (icon != null) {
-            Box(
-                Modifier
-                    .size(40.dp)
-                    .clip(CircleShape)
-                    .background(MaterialTheme.colorScheme.primaryContainer),
-                contentAlignment = Alignment.Center
-            ) {
-                Icon(
-                    icon,
-                    contentDescription = null,
-                    modifier = Modifier.size(20.dp),
-                    tint = MaterialTheme.colorScheme.onPrimaryContainer
-                )
-            }
-            Spacer(Modifier.width(14.dp))
-        }
-        Column(Modifier.weight(1f)) {
-            Text(title, style = MaterialTheme.typography.bodyLarge)
-            if (subtitle != null) {
-                Text(
-                    subtitle,
-                    style = MaterialTheme.typography.labelSmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-            }
-        }
-        Switch(checked = checked, onCheckedChange = onCheckedChange)
-    }
+    SettingListItem(
+        icon = icon,
+        title = title,
+        subtitle = subtitle,
+        trailing = { Switch(checked = checked, onCheckedChange = onCheckedChange) }
+    )
 }

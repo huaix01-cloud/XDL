@@ -321,6 +321,9 @@ fun HomeScreen(
                     }
                 }
             }
+            // 卡片与输入框之间留出和下方组件一致的间距，别贴在一起
+            Spacer(Modifier.height(12.dp))
+
             // ---------------- 链接输入（V5：框内只有图标，无占位文字）
             OutlinedTextField(
                 value = st.url,

@@ -48,10 +48,14 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.layout.boundsInWindow
+import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.vectorResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.yg.xdl.FolderOpener
 import com.yg.xdl.Platform
 import com.yg.xdl.R
@@ -67,6 +71,28 @@ fun SettingsScreen(onBack: () -> Unit) {
     var showMaxDialog by remember { mutableStateOf(false) }
     var showPlatformSheet by remember { mutableStateOf(false) }
     val sheetState = rememberModalBottomSheetState()
+
+    // 主题切换也走 Circular Reveal：记录按钮位置，以它为圆心揭示
+    var themePos by remember { mutableStateOf(androidx.compose.ui.geometry.Offset.Zero) }
+    val systemDark = androidx.compose.foundation.isSystemInDarkTheme()
+    val darkNow = when (Settings.theme) {
+        ThemeMode.DARK -> true
+        ThemeMode.LIGHT -> false
+        ThemeMode.SYSTEM -> systemDark
+    }
+    val applyTheme: (ThemeMode) -> Unit = { target ->
+        val act = ctx as? com.yg.xdl.MainActivity
+        val toDark = when (target) {
+            ThemeMode.DARK -> true
+            ThemeMode.LIGHT -> false
+            ThemeMode.SYSTEM -> systemDark
+        }
+        if (act != null && themePos != androidx.compose.ui.geometry.Offset.Zero) {
+            act.switchThemeWithReveal(themePos.x, themePos.y, target, darkNow, toDark)
+        } else {
+            Settings.updateTheme(target)
+        }
+    }
 
     Box(Modifier.fillMaxSize()) {
         Column(
@@ -110,29 +136,36 @@ fun SettingsScreen(onBack: () -> Unit) {
                         onCheckedChange = { Settings.updateWifiOnly(it) },
                         icon = ImageVector.vectorResource(R.drawable.ic_wifi)
                     )
-                    IconListItem(
+                    SettingListItem(
                         icon = ImageVector.vectorResource(R.drawable.ic_folder_open),
                         title = "文件保存位置",
                         subtitle = "例：/storage/emulated/0/Movies/XDL",
                         onClick = { FolderOpener.open(ctx, "Movies/XDL") }
                     )
-                    IconListItem(
+                    SettingListItem(
                         icon = Icons.Outlined.Menu,
                         title = "最大下载数量",
                         subtitle = "当前限制 ${Settings.maxConcurrent} 个",
                         onClick = { showMaxDialog = true }
                     )
-                    IconListItem(
+                    SettingListItem(
                         icon = Icons.Outlined.MoreVert,
                         title = "下载平台选择",
                         subtitle = "当前 ${Settings.platform.label}",
-                        trailing = Icons.Outlined.KeyboardArrowRight,
-                        onClick = { showPlatformSheet = true }
+                        onClick = { showPlatformSheet = true },
+                        trailing = {
+                            Icon(
+                                Icons.Outlined.KeyboardArrowRight,
+                                contentDescription = null,
+                                modifier = Modifier.size(20.dp),
+                                tint = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        }
                     )
                 }
             }
 
-            Spacer(Modifier.height(18.dp))
+            Spacer(Modifier.height(14.dp))
 
             // ---------------- XDL + 版本 chip + 检查新版本
             Row(
@@ -155,7 +188,7 @@ fun SettingsScreen(onBack: () -> Unit) {
                 Text("检查新版本", style = MaterialTheme.typography.labelMedium)
             }
 
-            Spacer(Modifier.height(10.dp))
+            Spacer(Modifier.height(4.dp))
 
             // ---------------- 主题（6canvas：splitButton，动态颜色并入其中）
             Row(
@@ -166,7 +199,7 @@ fun SettingsScreen(onBack: () -> Unit) {
                     label = "主题",
                     icon = ImageVector.vectorResource(R.drawable.ic_light_mode),
                     onClick = {
-                        Settings.updateTheme(
+                        applyTheme(
                             when (Settings.theme) {
                                 ThemeMode.LIGHT -> ThemeMode.DARK
                                 ThemeMode.DARK -> ThemeMode.SYSTEM
@@ -182,16 +215,21 @@ fun SettingsScreen(onBack: () -> Unit) {
                     ),
                     onAction = { label ->
                         when (label) {
-                            "浅色" -> Settings.updateTheme(ThemeMode.LIGHT)
-                            "深色" -> Settings.updateTheme(ThemeMode.DARK)
-                            "跟随系统" -> Settings.updateTheme(ThemeMode.SYSTEM)
+                            "浅色" -> applyTheme(ThemeMode.LIGHT)
+                            "深色" -> applyTheme(ThemeMode.DARK)
+                            "跟随系统" -> applyTheme(ThemeMode.SYSTEM)
                             "动态颜色" -> Settings.updateDynamicColor(!Settings.dynamicColor)
                         }
                     },
-                    modifier = Modifier.width(190.dp),
+                    modifier = Modifier
+                        .width(190.dp)
+                        .onGloballyPositioned { c -> themePos = c.boundsInWindow().center },
                     tonal = true
                 )
             }
+
+            // 主题和下面的介绍卡之间留白，别贴着
+            Spacer(Modifier.height(22.dp))
 
             // ---------------- 介绍容器（6canvas：不是图片，放介绍、点击跳项目地址）
             Surface(
@@ -203,7 +241,7 @@ fun SettingsScreen(onBack: () -> Unit) {
                             ctx.startActivity(
                                 android.content.Intent(
                                     android.content.Intent.ACTION_VIEW,
-                                    android.net.Uri.parse("https://github.com/CYQawa/YunX")
+                                    android.net.Uri.parse("https://github.com/huaix01-cloud/XDL")
                                 ).addFlags(android.content.Intent.FLAG_ACTIVITY_NEW_TASK)
                             )
                         }
@@ -211,19 +249,18 @@ fun SettingsScreen(onBack: () -> Unit) {
                 shape = RoundedCornerShape(28.dp),
                 color = MaterialTheme.colorScheme.surfaceContainerLow
             ) {
-                Column(Modifier.padding(20.dp)) {
-                    Text(
-                        "XDL",
-                        style = MaterialTheme.typography.titleLarge,
-                        color = MaterialTheme.colorScheme.primary
-                    )
-                    Spacer(Modifier.height(6.dp))
+                // 6canvas 给的高度是 216dp；去掉顶部大标题后内容变少，
+                // 改成垂直居中，避免中间空一大块
+                Column(
+                    Modifier.padding(horizontal = 20.dp, vertical = 18.dp),
+                    verticalArrangement = Arrangement.Center
+                ) {
                     Text(
                         "X（Twitter）图片 / 视频下载器\n解析公开接口，把原图与最高码率视频直接存进相册。",
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
-                    Spacer(Modifier.weight(1f))
+                    Spacer(Modifier.height(18.dp))
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Text(
                             "点击查看项目主页",
@@ -356,56 +393,3 @@ fun SettingsScreen(onBack: () -> Unit) {
     }
 }
 
-/** 设置页带圆形图标的列表项 */
-@Composable
-private fun IconListItem(
-    icon: ImageVector,
-    title: String,
-    subtitle: String?,
-    onClick: () -> Unit,
-    trailing: ImageVector? = null
-) {
-    Row(
-        Modifier
-            .fillMaxWidth()
-            .clickable { onClick() }
-            .padding(horizontal = 6.dp, vertical = 10.dp),
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        Box(
-            Modifier
-                .size(40.dp)
-                .clip(CircleShape)
-                .background(MaterialTheme.colorScheme.primaryContainer),
-            contentAlignment = Alignment.Center
-        ) {
-            Icon(
-                icon,
-                contentDescription = null,
-                modifier = Modifier.size(20.dp),
-                tint = MaterialTheme.colorScheme.onPrimaryContainer
-            )
-        }
-        Spacer(Modifier.width(14.dp))
-        Column(Modifier.weight(1f)) {
-            Text(title, style = MaterialTheme.typography.bodyLarge)
-            if (subtitle != null) {
-                Text(
-                    subtitle,
-                    style = MaterialTheme.typography.labelSmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis
-                )
-            }
-        }
-        if (trailing != null) {
-            Icon(
-                trailing,
-                contentDescription = null,
-                modifier = Modifier.size(20.dp),
-                tint = MaterialTheme.colorScheme.onSurfaceVariant
-            )
-        }
-    }
-}

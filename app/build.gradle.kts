@@ -13,8 +13,8 @@ android {
         applicationId = "com.yg.xdl"
         minSdk = 29
         targetSdk = 36
-        versionCode = 8
-        versionName = "1.2.5"
+        versionCode = 9
+        versionName = "1.2.6"
     }
 
     buildTypes {
