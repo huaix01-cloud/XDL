@@ -23,6 +23,7 @@ object Downloader {
         index: Int,
         url: String,
         isVideo: Boolean,
+        referer: String? = null,
         onProgress: (done: Long, total: Long) -> Unit
     ): Saved {
         val ext = if (isVideo) "mp4" else guessExt(url)
@@ -63,7 +64,7 @@ object Downloader {
         Log.i("DL", "开始 [$mime] $rel/$name <- $url")
 
         try {
-            val conn = openHttp(url)
+            val conn = openHttp(url, referer)
             val code = conn.responseCode
             if (code !in 200..299) {
                 conn.disconnect()
@@ -114,13 +115,13 @@ object Downloader {
         }
     }
 
-    private fun openHttp(url: String): HttpURLConnection =
+    private fun openHttp(url: String, referer: String?): HttpURLConnection =
         (NetConfig.open(url) as HttpURLConnection).apply {
             connectTimeout = 8000
             readTimeout = 60000
             instanceFollowRedirects = true
             setRequestProperty("User-Agent", XParser.UA)
-            setRequestProperty("Referer", "https://x.com/")
+            setRequestProperty("Referer", referer ?: "https://x.com/")
             setRequestProperty("Accept", "*/*")
         }
 

@@ -75,7 +75,7 @@ class MainActivity : ComponentActivity() {
         Log.i(
             "App",
             "启动 v${Settings.versionName} sdk=${Build.VERSION.SDK_INT} " +
-                "画质=${Settings.effectiveQuality.label} 平台=${Settings.platform.label}"
+                "画质=${Settings.effectiveQuality.label}"
         )
 
         incoming.value = extract(intent)
@@ -397,12 +397,12 @@ class MainActivity : ComponentActivity() {
                 i.getCharSequenceExtra(Intent.EXTRA_PROCESS_TEXT)?.toString()
             else -> null
         } ?: return null
-        val found = XParser.findTweetUrl(raw)
-        if (found != null) return found
-        val t = raw.trim()
-        return if (t.matches(Regex("\\d{15,25}")) || t.contains("x.com") ||
-            t.contains("twitter.com") || t.contains("t.co")
-        ) t else null
+
+        // 平台由 Parser 按链接自动识别：能认出平台就把原文交出去（X / B站都走这条）
+        return runCatching {
+            Parser.detect(raw)
+            raw.trim()
+        }.getOrNull()
     }
 }
 

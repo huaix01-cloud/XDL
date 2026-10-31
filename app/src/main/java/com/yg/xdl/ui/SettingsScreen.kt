@@ -150,8 +150,8 @@ fun SettingsScreen(onBack: () -> Unit) {
                     )
                     SettingListItem(
                         icon = Icons.Outlined.MoreVert,
-                        title = "下载平台选择",
-                        subtitle = "当前 ${Settings.platform.label}",
+                        title = "支持的平台",
+                        subtitle = "X · 哔哩哔哩（粘贴链接自动识别）",
                         onClick = { showPlatformSheet = true },
                         trailing = {
                             Icon(
@@ -342,7 +342,7 @@ fun SettingsScreen(onBack: () -> Unit) {
         )
     }
 
-    // ---------------- 下载平台选择（底部面板）
+    // ---------------- 支持的平台（只读展示，平台由链接自动识别）
     if (showPlatformSheet) {
         ModalBottomSheet(
             onDismissRequest = { showPlatformSheet = false },
@@ -350,46 +350,46 @@ fun SettingsScreen(onBack: () -> Unit) {
         ) {
             Column(Modifier.padding(horizontal = 20.dp).padding(bottom = 28.dp)) {
                 Text(
-                    "下载平台",
-                    style = MaterialTheme.typography.titleLarge,
-                    modifier = Modifier.padding(bottom = 8.dp)
+                    "支持的平台",
+                    style = MaterialTheme.typography.titleLarge
+                )
+                Text(
+                    "粘贴链接后自动识别，不需要手动选择",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.padding(top = 4.dp, bottom = 12.dp)
                 )
                 Platform.entries.forEach { p ->
                     Row(
-                        Modifier
-                            .fillMaxWidth()
-                            .clickable {
-                                Settings.updatePlatform(p)
-                                scope.launch {
-                                    sheetState.hide()
-                                    showPlatformSheet = false
-                                }
-                            }
-                            .padding(vertical = 8.dp),
+                        Modifier.fillMaxWidth().padding(vertical = 10.dp),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        RadioButton(
-                            selected = Settings.platform == p,
-                            onClick = {
-                                Settings.updatePlatform(p)
-                                scope.launch {
-                                    sheetState.hide()
-                                    showPlatformSheet = false
-                                }
-                            }
+                        Box(
+                            Modifier
+                                .size(8.dp)
+                                .clip(CircleShape)
+                                .background(
+                                    if (p.enabled) MaterialTheme.colorScheme.primary
+                                    else MaterialTheme.colorScheme.outlineVariant
+                                )
                         )
-                        Text(
-                            p.label,
-                            style = MaterialTheme.typography.bodyLarge,
-                            color = if (p.enabled) MaterialTheme.colorScheme.onSurface
-                            else MaterialTheme.colorScheme.onSurfaceVariant,
-                            maxLines = 1,
-                            overflow = TextOverflow.Ellipsis
-                        )
+                        Spacer(Modifier.width(12.dp))
+                        Column(Modifier.weight(1f)) {
+                            Text(
+                                p.label,
+                                style = MaterialTheme.typography.bodyLarge,
+                                color = if (p.enabled) MaterialTheme.colorScheme.onSurface
+                                else MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                            Text(
+                                if (p.enabled) "已支持" else "接口调研中，即将支持",
+                                style = MaterialTheme.typography.labelSmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        }
                     }
                 }
             }
         }
     }
 }
-

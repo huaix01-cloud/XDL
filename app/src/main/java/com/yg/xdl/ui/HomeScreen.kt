@@ -82,6 +82,7 @@ import com.yg.xdl.Quality
 import com.yg.xdl.R
 import com.yg.xdl.Settings
 import com.yg.xdl.TweetResult
+import com.yg.xdl.Parser
 import com.yg.xdl.XParser
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
@@ -129,10 +130,6 @@ fun HomeScreen(
             st.error = "先粘贴一条推文链接"
             return
         }
-        if (Settings.platform != Platform.X) {
-            st.error = "${Settings.platform.label} 还没接，先选 X"
-            return
-        }
         if (st.loading) return
         st.loading = true
         st.error = ""
@@ -143,7 +140,7 @@ fun HomeScreen(
         scope.launch {
             val res = runCatching {
                 withContext(Dispatchers.IO) {
-                    XParser.fetch(XParser.extractId(text), Settings.effectiveQuality)
+                    Parser.parse(text, Settings.effectiveQuality)
                 }
             }
             res.onSuccess { r ->
@@ -171,7 +168,7 @@ fun HomeScreen(
         }
         picks.forEach { i ->
             DownloadCenter.enqueue(
-                platform = Settings.platform,
+                platform = t.platform,
                 handle = t.handle,
                 tweetId = t.id,
                 media = t.media[i],
@@ -386,7 +383,7 @@ fun HomeScreen(
                 }
                 Button(
                     onClick = { analyze(st.url) },
-                    enabled = !st.loading && Settings.platform.enabled,
+                    enabled = !st.loading,
                     shape = MaterialTheme.shapes.medium,
                     modifier = Modifier.weight(1.2f),
                     contentPadding = PaddingValues(horizontal = 8.dp, vertical = 12.dp)
@@ -535,8 +532,8 @@ private fun MediaTile(
     val thumbUrl = item.thumb ?: if (item.isVideo) null else item.url.substringBefore("?") + "?name=small"
     var bmp by remember(thumbUrl) { mutableStateOf<ImageBitmap?>(null) }
     LaunchedEffect(thumbUrl) {
-        var r = if (thumbUrl != null) withContext(Dispatchers.IO) { ImageCache.load(thumbUrl) } else null
-        if (r == null) r = withContext(Dispatchers.IO) { ImageCache.load(item.url) }
+        var r = if (thumbUrl != null) withContext(Dispatchers.IO) { ImageCache.load(thumbUrl, item.referer) } else null
+        if (r == null) r = withContext(Dispatchers.IO) { ImageCache.load(item.url, item.referer) }
         bmp = r
     }
 

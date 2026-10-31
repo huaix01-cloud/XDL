@@ -11,20 +11,20 @@ object ImageCache {
 
     private val cache = LruCache<String, ImageBitmap>(60)
 
-    fun load(url: String): ImageBitmap? {
+    fun load(url: String, referer: String? = null): ImageBitmap? {
         cache.get(url)?.let { return it }
-        val r = loadOnce(url)
+        val r = loadOnce(url, referer)
         return r
     }
 
-    private fun loadOnce(url: String): ImageBitmap? {
+    private fun loadOnce(url: String, referer: String? = null): ImageBitmap? {
         return try {
             val conn = NetConfig.open(url) as HttpURLConnection
             conn.connectTimeout = 8000
             conn.readTimeout = 25000
             conn.instanceFollowRedirects = true
             conn.setRequestProperty("User-Agent", XParser.UA)
-            conn.setRequestProperty("Referer", "https://x.com/")
+            conn.setRequestProperty("Referer", referer ?: "https://x.com/")
             if (conn.responseCode !in 200..299) {
                 conn.disconnect()
                 return null

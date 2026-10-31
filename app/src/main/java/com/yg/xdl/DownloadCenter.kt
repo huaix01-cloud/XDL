@@ -32,7 +32,8 @@ class DownloadTask(
     val title: String,
     val qualityLabel: String,
     val url: String,
-    val isVideo: Boolean
+    val isVideo: Boolean,
+    val referer: String? = null
 ) {
     val kindLabel: String
         get() = when {
@@ -108,7 +109,8 @@ object DownloadCenter {
             title = "@$handle",
             qualityLabel = qualityLabel,
             url = media.url,
-            isVideo = media.isVideo
+            isVideo = media.isVideo,
+            referer = media.referer
         )
         tasks.add(t)
         Log.i("Q", "入队 $key ${t.kindLabel} ${media.width}x${media.height} ${media.url.take(90)}")
@@ -159,7 +161,8 @@ object DownloadCenter {
                     tweetId = t.tweetId,
                     index = t.index,
                     url = t.url,
-                    isVideo = t.isVideo
+                    isVideo = t.isVideo,
+                    referer = t.referer
                 ) { done, total ->
                     t.bytes = done
                     t.total = total

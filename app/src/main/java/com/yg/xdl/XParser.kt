@@ -11,7 +11,9 @@ data class MediaItem(
     val thumb: String?,        // 缩略图
     val width: Int,
     val height: Int,
-    val durationMs: Long
+    val durationMs: Long,
+    /** 下载时需要的 Referer（B站有防盗链，X 不需要） */
+    val referer: String? = null
 ) {
     val isVideo: Boolean get() = kind == "video" || kind == "gif"
 }
@@ -24,7 +26,9 @@ data class TweetResult(
     val avatar: String?,
     val text: String,
     val date: String,
-    val media: List<MediaItem>
+    val media: List<MediaItem>,
+    /** 这条内容来自哪个平台（下载时用于文件名前缀与记录） */
+    val platform: Platform = Platform.X
 )
 
 class ParseException(message: String) : Exception(message)
