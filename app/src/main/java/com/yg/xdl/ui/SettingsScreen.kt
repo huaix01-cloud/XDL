@@ -100,13 +100,15 @@ fun SettingsScreen(onBack: () -> Unit) {
                         title = "下载通知",
                         subtitle = "需要通知保活后台下载",
                         checked = Settings.notifyDownload,
-                        onCheckedChange = { Settings.updateNotifyDownload(it) }
+                        onCheckedChange = { Settings.updateNotifyDownload(it) },
+                        icon = ImageVector.vectorResource(R.drawable.ic_notifications)
                     )
                     SettingSwitchRow(
                         title = "仅 WI FI 下载",
                         subtitle = null,
                         checked = Settings.wifiOnly,
-                        onCheckedChange = { Settings.updateWifiOnly(it) }
+                        onCheckedChange = { Settings.updateWifiOnly(it) },
+                        icon = ImageVector.vectorResource(R.drawable.ic_wifi)
                     )
                     IconListItem(
                         icon = ImageVector.vectorResource(R.drawable.ic_folder_open),
