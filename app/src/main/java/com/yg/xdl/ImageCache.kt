@@ -13,16 +13,13 @@ object ImageCache {
 
     fun load(url: String): ImageBitmap? {
         cache.get(url)?.let { return it }
-        var r = loadOnce(url, useProxy = true)
-        if (r == null && NetConfig.proxyEnabled && !NetConfig.isProxyBrokenFor(url)) {
-            r = loadOnce(url, useProxy = false)
-        }
+        val r = loadOnce(url)
         return r
     }
 
-    private fun loadOnce(url: String, useProxy: Boolean): ImageBitmap? {
+    private fun loadOnce(url: String): ImageBitmap? {
         return try {
-            val conn = NetConfig.open(url, useProxy) as HttpURLConnection
+            val conn = NetConfig.open(url) as HttpURLConnection
             conn.connectTimeout = 8000
             conn.readTimeout = 25000
             conn.instanceFollowRedirects = true
@@ -39,8 +36,7 @@ object ImageCache {
             cache.put(url, ib)
             ib
         } catch (e: java.io.IOException) {
-            if (useProxy) NetConfig.markProxyBroken(url, e.message ?: e.javaClass.simpleName)
-            null
+                        null
         } catch (e: Exception) {
             null
         }

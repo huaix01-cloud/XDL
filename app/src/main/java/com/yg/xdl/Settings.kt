@@ -47,7 +47,7 @@ object Settings {
     var saveRoot by mutableStateOf("Movies/XDL")
         private set
 
-    val versionName: String = "1.2"
+    val versionName: String = "1.2.1"
 
     fun init(ctx: Context) {
         val p = ctx.getSharedPreferences(PREF, Context.MODE_PRIVATE)

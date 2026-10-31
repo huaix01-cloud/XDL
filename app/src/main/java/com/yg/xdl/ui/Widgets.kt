@@ -83,45 +83,44 @@ fun RingProgress(
     }
 }
 
-/** 网络/代理状态小圆点 + 文案 */
+/**
+ * V5 的网络状态 chip：有 VPN / 系统代理时显示 "vpn 123ms"，
+ * 没有代理时只显示延迟 —— 但宽度固定，避免布局跳动。
+ */
 @Composable
-fun NetStatusPill(modifier: Modifier = Modifier) {
-    val st = NetWatch.status
-    val color = when (st) {
-        NetWatch.Status.OK_PROXY, NetWatch.Status.OK_DIRECT -> Color(0xFF2E7D32)
-        NetWatch.Status.PROXY_DOWN, NetWatch.Status.UNREACHABLE -> MaterialTheme.colorScheme.error
+fun NetChip(modifier: Modifier = Modifier) {
+    val hasProxy = NetWatch.hasProxy
+    val ms = if (NetWatch.apiMillis > 0) "${NetWatch.apiMillis}ms" else "---"
+    val color = when (NetWatch.status) {
+        NetWatch.Status.OK -> Color(0xFF2E7D32)
+        NetWatch.Status.UNREACHABLE -> MaterialTheme.colorScheme.error
         NetWatch.Status.OFFLINE -> MaterialTheme.colorScheme.outline
         NetWatch.Status.CHECKING -> MaterialTheme.colorScheme.tertiary
         NetWatch.Status.UNKNOWN -> MaterialTheme.colorScheme.outline
     }
     Surface(
-        modifier = modifier.heightIn(min = 28.dp),
+        modifier = modifier.width(118.dp).heightIn(min = 32.dp),
         shape = RoundedCornerShape(50),
         color = MaterialTheme.colorScheme.surfaceContainerHigh
     ) {
         Row(
-            modifier = Modifier.padding(horizontal = 10.dp, vertical = 5.dp),
-            verticalAlignment = Alignment.CenterVertically
+            modifier = Modifier.fillMaxWidth().padding(horizontal = 8.dp, vertical = 5.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.Center
         ) {
-            Box(
-                Modifier
-                    .size(8.dp)
-                    .background(color, CircleShape)
+            Icon(
+                ImageVector.vectorResource(R.drawable.ic_language),
+                contentDescription = null,
+                modifier = Modifier.size(14.dp),
+                tint = color
             )
-            Spacer(Modifier.width(6.dp))
+            Spacer(Modifier.width(5.dp))
             Text(
-                NetWatch.statusText,
+                if (hasProxy) "vpn $ms" else ms,
                 style = MaterialTheme.typography.labelMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                maxLines = 1
             )
-            if (NetWatch.apiMillis > 0 && NetWatch.apiReachable == true) {
-                Spacer(Modifier.width(6.dp))
-                Text(
-                    "${NetWatch.apiMillis}ms",
-                    style = MaterialTheme.typography.labelSmall,
-                    color = MaterialTheme.colorScheme.outline
-                )
-            }
         }
     }
 }

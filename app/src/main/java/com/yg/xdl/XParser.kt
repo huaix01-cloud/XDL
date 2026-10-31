@@ -81,26 +81,9 @@ object XParser {
 
     // ---------------------------------------------------------------- 网络
 
-    /** 发 GET，自动跟随重定向；代理连不上时自动降级直连重试一次 */
-    private fun httpGetFollow(urlStr: String, timeoutMs: Int = 20000): Pair<String, String> {
-        if (!NetConfig.proxyEnabled) return getOnce(urlStr, timeoutMs, useProxy = true)
-        return try {
-            getOnce(urlStr, timeoutMs, useProxy = true)
-        } catch (e: Exception) {
-            if (e is java.io.IOException) {
-                val why = "${e.javaClass.simpleName}: ${e.message}"
-                Log.w("HTTP", "代理不通（$why），改直连重试: $urlStr")
-                NetConfig.markProxyBroken(urlStr, why)
-                try {
-                    getOnce(urlStr, timeoutMs, useProxy = false)
-                } catch (e2: Exception) {
-                    throw ParseException("代理失败($why) / 直连失败(${e2.message})")
-                }
-            } else {
-                throw e
-            }
-        }
-    }
+    /** 发 GET，自动跟随重定向 */
+    private fun httpGetFollow(urlStr: String, timeoutMs: Int = 20000): Pair<String, String> =
+        getOnce(urlStr, timeoutMs, useProxy = false)
 
     private fun getOnce(urlStr: String, timeoutMs: Int, useProxy: Boolean): Pair<String, String> {
         val t0 = System.currentTimeMillis()

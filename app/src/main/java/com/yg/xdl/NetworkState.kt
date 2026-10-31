@@ -10,29 +10,19 @@ import androidx.compose.runtime.setValue
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.net.HttpURLConnection
-import java.net.InetSocketAddress
-import java.net.Socket
+import java.net.Proxy
 
 /**
- * 网络 + 代理状态检测。
+ * 网络状态检测（**只读**，App 里不配置任何代理）。
  *
- * 为什么不是「访问一个域名看看通不通」：
- * 那种做法有三个问题 —— 每次都要占用流量、慢（一个往返 RTT 起）、
- * 而且分不清「没网 / 代理没开 / 代理开了但走不通」这三种完全不同的故障。
- *
- * 这里分三层看，各用最合适的信号：
- *   1) 在线状态   → ConnectivityManager.NetworkCallback + NET_CAPABILITY_VALIDATED
- *                  系统级判定，零流量、被动实时，还能区分 WiFi / 移动网络
- *   2) 代理是否在跑 → 对代理端口做一次 TCP 握手（1200ms 超时）
- *                  毫秒级、不产生 HTTP 流量，代理软件挂了能立刻看出来
- *   3) 能不能真正解析 → 对 api.fxtwitter.com 发一次 GET，看有没有 HTTP 响应
- *                  只在下拉刷新 / 点检测时做，平时不跑
+ * 三层信号：
+ *   1) 在线状态  → ConnectivityManager.NetworkCallback + NET_CAPABILITY_VALIDATED
+ *   2) 是否有代理 → 系统 VPN（TRANSPORT_VPN）或 ConnectivityManager.defaultProxy
+ *   3) 能不能解析 → 对 api.fxtwitter.com 发一次 GET（8s 超时）
  */
 object NetWatch {
 
-    enum class Status {
-        UNKNOWN, CHECKING, OFFLINE, PROXY_DOWN, OK_PROXY, OK_DIRECT, UNREACHABLE
-    }
+    enum class Status { UNKNOWN, CHECKING, OFFLINE, OK, UNREACHABLE }
 
     private const val PROBE_URL = "https://api.fxtwitter.com/2/status/20" // 会 404，但有响应就算通
 
@@ -43,9 +33,13 @@ object NetWatch {
     var onWifi by mutableStateOf(false)
         private set
 
-    var checking by mutableStateOf(false)
+    /** 系统层是否有 VPN 在跑 */
+    var vpnActive by mutableStateOf(false)
         private set
-    var proxyOpen by mutableStateOf<Boolean?>(null)
+    var httpProxy by mutableStateOf<String?>(null)
+        private set
+
+    var checking by mutableStateOf(false)
         private set
     var apiReachable by mutableStateOf<Boolean?>(null)
         private set
@@ -59,12 +53,15 @@ object NetWatch {
     private var cm: ConnectivityManager? = null
     private var callback: ConnectivityManager.NetworkCallback? = null
 
+    /** 有 VPN 或系统 HTTP 代理 */
+    val hasProxy: Boolean
+        get() = vpnActive || httpProxy != null
+
     val status: Status
         get() = when {
             checking -> Status.CHECKING
             !online -> Status.OFFLINE
-            NetConfig.proxyInUse && proxyOpen == false -> Status.PROXY_DOWN
-            apiReachable == true -> if (NetConfig.proxyInUse && proxyOpen == true) Status.OK_PROXY else Status.OK_DIRECT
+            apiReachable == true -> Status.OK
             apiReachable == false -> Status.UNREACHABLE
             else -> Status.UNKNOWN
         }
@@ -72,12 +69,10 @@ object NetWatch {
     val statusText: String
         get() = when (status) {
             Status.UNKNOWN -> "未检测"
-            Status.CHECKING -> "检测中…"
+            Status.CHECKING -> "检测中"
             Status.OFFLINE -> "无网络"
-            Status.PROXY_DOWN -> "代理未响应"
-            Status.OK_PROXY -> "代理已连接"
-            Status.OK_DIRECT -> if (NetConfig.proxyInUse) "直连可用" else "网络正常"
-            Status.UNREACHABLE -> "解析不可达"
+            Status.OK -> "已连接"
+            Status.UNREACHABLE -> "不可达"
         }
 
     fun start(ctx: Context) {
@@ -90,12 +85,14 @@ object NetWatch {
                 online = caps.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET)
                 validated = caps.hasCapability(NetworkCapabilities.NET_CAPABILITY_VALIDATED)
                 onWifi = caps.hasTransport(NetworkCapabilities.TRANSPORT_WIFI)
+                vpnActive = caps.hasTransport(NetworkCapabilities.TRANSPORT_VPN)
             }
 
             override fun onLost(network: Network) {
                 online = false
                 validated = false
                 onWifi = false
+                vpnActive = false
             }
 
             override fun onUnavailable() {
@@ -112,15 +109,20 @@ object NetWatch {
         val n = c.activeNetwork ?: run {
             online = false
             validated = false
+            vpnActive = false
             return
         }
         val caps = c.getNetworkCapabilities(n)
         online = caps?.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET) == true
         validated = caps?.hasCapability(NetworkCapabilities.NET_CAPABILITY_VALIDATED) == true
         onWifi = caps?.hasTransport(NetworkCapabilities.TRANSPORT_WIFI) == true
+        vpnActive = caps?.hasTransport(NetworkCapabilities.TRANSPORT_VPN) == true
+        httpProxy = runCatching {
+            val p = c.defaultProxy
+            if (p == null || p == Proxy.NO_PROXY) null else p.toString()
+        }.getOrNull()
     }
 
-    /** 全量探测：代理端口 + 解析接口。调用方应在协程里调 */
     suspend fun probe() {
         if (checking) return
         checking = true
@@ -128,29 +130,13 @@ object NetWatch {
             lastError = null
             refreshFromActive()
 
-            val useProxy = NetConfig.proxyInUse
-            val ph = NetConfig.proxyHost
-            val pp = NetConfig.proxyPort
-
-            var pOpen: Boolean? = null
             val t0 = System.currentTimeMillis()
             var reachable = false
             var err: String? = null
 
             withContext(Dispatchers.IO) {
-                if (ph != null && pp in 1..65535) {
-                    pOpen = try {
-                        Socket().use { s ->
-                            s.connect(InetSocketAddress(ph, pp), 1200)
-                            true
-                        }
-                    } catch (e: Exception) {
-                        false
-                    }
-                }
-
                 try {
-                    val conn = NetConfig.openForProbe(PROBE_URL, useProxy) as HttpURLConnection
+                    val conn = NetConfig.openForProbe(PROBE_URL, false) as HttpURLConnection
                     conn.requestMethod = "GET"
                     conn.connectTimeout = 8000
                     conn.readTimeout = 8000
@@ -158,7 +144,6 @@ object NetWatch {
                     val code = conn.responseCode
                     runCatching { conn.inputStream?.use { it.readBytes() } }
                     conn.disconnect()
-                    // 任何 HTTP 响应码都说明链路是通的（这个 URL 本来就返回 404）
                     reachable = code in 100..599
                     if (!reachable) err = "HTTP $code"
                 } catch (e: Exception) {
@@ -167,7 +152,6 @@ object NetWatch {
                 }
             }
 
-            proxyOpen = pOpen
             apiReachable = reachable
             apiMillis = System.currentTimeMillis() - t0
             lastError = err
@@ -175,12 +159,11 @@ object NetWatch {
 
             Log.i(
                 "NET",
-                "探测完成 在线=$online 已联网验证=$validated WiFi=$onWifi " +
-                    "代理=${if (useProxy) NetConfig.current else "关"} 端口通=${pOpen ?: "未测"} " +
-                    "解析可达=$reachable 用时=${apiMillis}ms" + (err?.let { " 错误=$it" } ?: "")
+                "探测完成 在线=$online 验证=$validated WiFi=$onWifi VPN=$vpnActive " +
+                    "系统代理=${httpProxy ?: "无"} 解析可达=$reachable 用时=${apiMillis}ms" +
+                    (err?.let { " 错误=$it" } ?: "")
             )
         } finally {
-            // 协程被取消（比如 Activity 重建）也必须复位，否则界面永远停在「检测中」
             checking = false
         }
     }

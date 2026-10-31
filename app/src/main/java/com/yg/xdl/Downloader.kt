@@ -63,7 +63,7 @@ object Downloader {
         Log.i("DL", "开始 [$mime] $rel/$name <- $url")
 
         try {
-            val conn = openWithFallback(url)
+            val conn = openHttp(url)
             val code = conn.responseCode
             if (code !in 200..299) {
                 conn.disconnect()
@@ -114,39 +114,15 @@ object Downloader {
         }
     }
 
-    /** 先按配置（代理/直连）连，IO 异常就换另一种重试一次，并按域名记住 */
-    private fun openWithFallback(url: String): HttpURLConnection {
-        fun build(useProxy: Boolean): HttpURLConnection =
-            (NetConfig.open(url, useProxy) as HttpURLConnection).apply {
-                connectTimeout = 8000
-                readTimeout = 60000
-                instanceFollowRedirects = true
-                setRequestProperty("User-Agent", XParser.UA)
-                setRequestProperty("Referer", "https://x.com/")
-                setRequestProperty("Accept", "*/*")
-            }
-
-        if (!NetConfig.proxyInUse) return build(true)
-
-        return try {
-            val c = build(true)
-            c.responseCode // 触发实际连接
-            c
-        } catch (e: Exception) {
-            if (e is java.io.IOException) {
-                val why = "${e.javaClass.simpleName}: ${e.message}"
-                Log.w("DL", "代理不通（$why），改直连重试: $url")
-                NetConfig.markProxyBroken(url, why)
-                try {
-                    build(false)
-                } catch (e2: Exception) {
-                    throw ParseException("代理失败($why) / 直连失败(${e2.message})")
-                }
-            } else {
-                throw e
-            }
+    private fun openHttp(url: String): HttpURLConnection =
+        (NetConfig.open(url) as HttpURLConnection).apply {
+            connectTimeout = 8000
+            readTimeout = 60000
+            instanceFollowRedirects = true
+            setRequestProperty("User-Agent", XParser.UA)
+            setRequestProperty("Referer", "https://x.com/")
+            setRequestProperty("Accept", "*/*")
         }
-    }
 
     private fun alreadyExists(ctx: Context, collection: Uri, rel: String, name: String): Boolean {
         val projection = arrayOf(MediaStore.MediaColumns._ID)

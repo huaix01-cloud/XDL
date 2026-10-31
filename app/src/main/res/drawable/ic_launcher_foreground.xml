@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    <!-- 竖杆 -->
+    <path
+        android:fillColor="#FFFFFFFF"
+        android:pathData="M50,20h8v26h-8z" />
+    <!-- 箭头 -->
+    <path
+        android:fillColor="#FFFFFFFF"
+        android:pathData="M54,68L30,44l5.7,-5.7 18.3,18.3 18.3,-18.3 5.7,5.7z" />
+    <!-- 底座横线 -->
+    <path
+        android:fillColor="#FFFFFFFF"
+        android:pathData="M34,76h40v7h-40z" />
+</vector>

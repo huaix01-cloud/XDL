@@ -5,6 +5,7 @@ import androidx.compose.ui.res.vectorResource
 import com.yg.xdl.R
 
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -36,12 +37,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import com.yg.xdl.NetConfig
+import com.yg.xdl.FolderOpener
 import com.yg.xdl.Settings
 import com.yg.xdl.ThemeMode
 
 @Composable
-fun SettingsScreen(onBack: () -> Unit, onOpenProxyDialog: () -> Unit) {
+fun SettingsScreen(onBack: () -> Unit) {
+    val ctx = androidx.compose.ui.platform.LocalContext.current
     Column(
         Modifier
             .fillMaxSize()
@@ -99,7 +101,10 @@ fun SettingsScreen(onBack: () -> Unit, onOpenProxyDialog: () -> Unit) {
             }
             HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
             Row(
-                Modifier.fillMaxWidth().padding(vertical = 14.dp),
+                Modifier
+                    .fillMaxWidth()
+                    .clickable { FolderOpener.open(ctx, "Movies/XDL") }
+                    .padding(vertical = 14.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Icon(
@@ -117,6 +122,10 @@ fun SettingsScreen(onBack: () -> Unit, onOpenProxyDialog: () -> Unit) {
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 }
+                AssistChip(
+                    onClick = { FolderOpener.open(ctx, "Movies/XDL") },
+                    label = { Text("打开", style = MaterialTheme.typography.labelMedium) }
+                )
             }
         }
 
@@ -147,36 +156,6 @@ fun SettingsScreen(onBack: () -> Unit, onOpenProxyDialog: () -> Unit) {
                 checked = Settings.dynamicColor,
                 onCheckedChange = { Settings.updateDynamicColor(it) }
             )
-        }
-
-        Spacer(Modifier.height(12.dp))
-
-        // ---------------- 网络
-        SectionCard {
-            Text(
-                "网络",
-                style = MaterialTheme.typography.labelLarge,
-                color = MaterialTheme.colorScheme.primary,
-                modifier = Modifier.padding(vertical = 6.dp)
-            )
-            Row(
-                Modifier.fillMaxWidth().padding(vertical = 12.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Column(Modifier.weight(1f)) {
-                    Text("HTTP 代理", style = MaterialTheme.typography.bodyLarge)
-                    Text(
-                        NetConfig.current.ifBlank { "未设置（直连 / 系统 VPN）" },
-                        style = MaterialTheme.typography.labelSmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                }
-                AssistChip(
-                    onClick = onOpenProxyDialog,
-                    label = { Text("修改", style = MaterialTheme.typography.labelMedium) },
-                    leadingIcon = { Icon(Icons.Outlined.Settings, null, Modifier.size(16.dp)) }
-                )
-            }
         }
 
         Spacer(Modifier.height(12.dp))

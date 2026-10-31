@@ -61,6 +61,7 @@ import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -104,7 +105,6 @@ fun HomeScreen(
     onToggleTheme: () -> Unit,
     onOpenTasks: () -> Unit,
     onOpenSettings: () -> Unit,
-    onOpenProxyDialog: () -> Unit
 ) {
     val scope = rememberCoroutineScope()
     val ctx = LocalContext.current
@@ -224,13 +224,14 @@ fun HomeScreen(
                     }
                 )
                 Spacer(Modifier.weight(1f))
+                NetChip()
+                Spacer(Modifier.width(8.dp))
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                    // V5：只是状态指示，不能点
                     Switch(
-                        checked = NetConfig.enabled,
-                        onCheckedChange = { on ->
-                            NetConfig.setEnabled(ctx, on)
-                            scope.launch { NetWatch.probe() }
-                        },
+                        checked = NetWatch.hasProxy,
+                        onCheckedChange = null,
+                        enabled = false,
                         modifier = Modifier.size(width = 46.dp, height = 30.dp)
                     )
                     Text(
@@ -241,38 +242,82 @@ fun HomeScreen(
                 }
             }
 
-            // ---------------- 网络状态行
-            Row(
-                Modifier.fillMaxWidth().padding(top = 4.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                NetStatusPill()
-                Spacer(Modifier.width(8.dp))
-                Text(
-                    NetConfig.current.ifBlank { "未设置代理" },
-                    style = MaterialTheme.typography.labelSmall,
-                    color = MaterialTheme.colorScheme.outline,
-                    modifier = Modifier.weight(1f),
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis
-                )
-                IconButton(
-                    onClick = { scope.launch { NetWatch.probe() } },
-                    modifier = Modifier.size(36.dp)
-                ) {
-                    Icon(
-                        Icons.Outlined.Refresh,
-                        contentDescription = "重新检测",
-                        modifier = Modifier.size(18.dp),
-                        tint = MaterialTheme.colorScheme.primary
-                    )
-                }
-                TextButton(onClick = onOpenProxyDialog) {
-                    Text("设置", style = MaterialTheme.typography.labelMedium)
-                }
-            }
-
             Spacer(Modifier.height(10.dp))
+
+            // ---------------- 解析结果
+            st.tweet?.let { t ->
+                Spacer(Modifier.height(12.dp))
+                ElevatedCard(
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(20.dp)
+                ) {
+                    Column(Modifier.padding(14.dp)) {
+                        // V5：contentAlign / textAlign = end
+                        Row(
+                            Modifier.fillMaxWidth(),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.End
+                        ) {
+                            Column(horizontalAlignment = Alignment.End) {
+                                Text(
+                                    t.authorName.ifBlank { t.handle },
+                                    style = MaterialTheme.typography.titleMedium,
+                                    maxLines = 1,
+                                    overflow = TextOverflow.Ellipsis,
+                                    textAlign = TextAlign.End
+                                )
+                                Text(
+                                    "@${t.handle}",
+                                    style = MaterialTheme.typography.labelSmall,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                    textAlign = TextAlign.End
+                                )
+                            }
+                            Spacer(Modifier.width(10.dp))
+                            Avatar(t.avatar)
+                        }
+                        if (t.text.isNotBlank()) {
+                            Spacer(Modifier.height(8.dp))
+                            Text(
+                                t.text,
+                                style = MaterialTheme.typography.bodyMedium,
+                                maxLines = 4,
+                                overflow = TextOverflow.Ellipsis,
+                                textAlign = TextAlign.End,
+                                modifier = Modifier.fillMaxWidth()
+                            )
+                        }
+                        if (t.media.isNotEmpty()) {
+                            Spacer(Modifier.height(10.dp))
+                            t.media.withIndex().toList().chunked(2).forEach { rowItems ->
+                                Row(
+                                    Modifier.fillMaxWidth(),
+                                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                                ) {
+                                    rowItems.forEach { (i, m) ->
+                                        MediaTile(
+                                            modifier = Modifier.weight(1f),
+                                            item = m,
+                                            selected = st.selected.contains(i),
+                                            onToggle = {
+                                                st.selected = if (st.selected.contains(i)) {
+                                                    st.selected - i
+                                                } else {
+                                                    st.selected + i
+                                                }
+                                            }
+                                        )
+                                    }
+                                    if (rowItems.size == 1) Spacer(Modifier.weight(1f))
+                                }
+                                Spacer(Modifier.height(8.dp))
+                            }
+                        }
+                    }
+                }
+
+                Spacer(Modifier.height(14.dp))
+            }
 
             // ---------------- 链接输入
             OutlinedTextField(
@@ -322,6 +367,7 @@ fun HomeScreen(
                     onClick = {
                         st.url = ""
                         st.tweet = null
+                        st.selected = emptySet()
                         st.error = ""
                         st.status = ""
                         st.parseProgress = 0f
@@ -349,38 +395,61 @@ fun HomeScreen(
                     Spacer(Modifier.width(6.dp))
                     Text("解析", style = MaterialTheme.typography.labelLarge, maxLines = 1)
                 }
+                // V5：设置入口在按钮行末尾
+                FloatingActionButton(
+                    onClick = onOpenSettings,
+                    modifier = Modifier.size(48.dp),
+                    containerColor = MaterialTheme.colorScheme.secondaryContainer,
+                    contentColor = MaterialTheme.colorScheme.onSecondaryContainer
+                ) {
+                    Icon(Icons.Outlined.Menu, contentDescription = "设置", Modifier.size(22.dp))
+                }
             }
 
             Spacer(Modifier.height(12.dp))
 
-            // ---------------- 平台 + 画质
-            Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-                SelectField(
-                    label = "平台",
-                    value = Settings.platform.label,
-                    options = Platform.entries.map { it.label },
-                    onSelect = { i -> Settings.updatePlatform(Platform.entries[i]) },
-                    selectedIndex = Platform.entries.indexOf(Settings.platform),
-                    modifier = Modifier.weight(1f)
-                )
+            // ---------------- 视频画质 + 保持最佳（V5：画质在左，勾选在右）
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
                 SelectField(
                     label = "视频画质",
                     value = if (Settings.keepBest) "最佳画质" else Settings.quality.label,
                     options = Quality.entries.map { it.label },
                     onSelect = { i -> Settings.updateQuality(Quality.entries[i]) },
                     selectedIndex = Quality.entries.indexOf(Settings.quality),
-                    modifier = Modifier.weight(1f),
+                    modifier = Modifier.width(176.dp),
                     enabled = !Settings.keepBest
                 )
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier.weight(1f)
+                ) {
+                    Checkbox(
+                        checked = Settings.keepBest,
+                        onCheckedChange = { Settings.updateKeepBest(it) }
+                    )
+                    Text(
+                        "保持选择最佳画质",
+                        style = MaterialTheme.typography.labelSmall,
+                        maxLines = 2,
+                        lineHeight = 14.sp
+                    )
+                }
             }
 
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Checkbox(
-                    checked = Settings.keepBest,
-                    onCheckedChange = { Settings.updateKeepBest(it) }
-                )
-                Text("保持选择最佳画质", style = MaterialTheme.typography.bodyMedium)
-            }
+            Spacer(Modifier.height(8.dp))
+
+            // ---------------- 平台（V5：单独一行）
+            SelectField(
+                label = "平台",
+                value = Settings.platform.label,
+                options = Platform.entries.map { it.label },
+                onSelect = { i -> Settings.updatePlatform(Platform.entries[i]) },
+                selectedIndex = Platform.entries.indexOf(Settings.platform),
+                modifier = Modifier.width(180.dp)
+            )
 
             if (Settings.platform != Platform.X) {
                 Surface(
@@ -409,87 +478,26 @@ fun HomeScreen(
                 )
             }
 
-            // ---------------- 解析结果
-            st.tweet?.let { t ->
-                Spacer(Modifier.height(12.dp))
-                ElevatedCard(
-                    modifier = Modifier.fillMaxWidth(),
-                    shape = RoundedCornerShape(20.dp)
-                ) {
-                    Column(Modifier.padding(14.dp)) {
-                        Row(verticalAlignment = Alignment.CenterVertically) {
-                            Avatar(t.avatar)
-                            Spacer(Modifier.width(10.dp))
-                            Column(Modifier.weight(1f)) {
-                                Text(
-                                    t.authorName.ifBlank { t.handle },
-                                    style = MaterialTheme.typography.titleMedium,
-                                    maxLines = 1,
-                                    overflow = TextOverflow.Ellipsis
-                                )
-                                Text(
-                                    "@${t.handle}",
-                                    style = MaterialTheme.typography.labelSmall,
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                                )
-                            }
-                        }
-                        if (t.text.isNotBlank()) {
-                            Spacer(Modifier.height(8.dp))
-                            Text(
-                                t.text,
-                                style = MaterialTheme.typography.bodyMedium,
-                                maxLines = 4,
-                                overflow = TextOverflow.Ellipsis
-                            )
-                        }
-                        if (t.media.isNotEmpty()) {
-                            Spacer(Modifier.height(10.dp))
-                            t.media.withIndex().toList().chunked(2).forEach { rowItems ->
-                                Row(
-                                    Modifier.fillMaxWidth(),
-                                    horizontalArrangement = Arrangement.spacedBy(8.dp)
-                                ) {
-                                    rowItems.forEach { (i, m) ->
-                                        MediaTile(
-                                            modifier = Modifier.weight(1f),
-                                            item = m,
-                                            selected = st.selected.contains(i),
-                                            onToggle = {
-                                                st.selected = if (st.selected.contains(i)) {
-                                                    st.selected - i
-                                                } else {
-                                                    st.selected + i
-                                                }
-                                            }
-                                        )
-                                    }
-                                    if (rowItems.size == 1) Spacer(Modifier.weight(1f))
-                                }
-                                Spacer(Modifier.height(8.dp))
-                            }
-                        }
+            // V5：下载按钮常驻，没解析结果时用浅色（tonal）
+            Spacer(Modifier.height(14.dp))
+            SplitActionButton(
+                label = if (st.selected.isEmpty()) "下载" else "下载 ${st.selected.size} 个",
+                icon = Icons.Outlined.Send,
+                onClick = { downloadSelected() },
+                actions = listOf(
+                    ImageVector.vectorResource(R.drawable.ic_done_all) to "全选",
+                    Icons.Outlined.ArrowForward to "查看下载"
+                ),
+                onAction = { label ->
+                    when (label) {
+                        "全选" -> st.tweet?.let { tt -> st.selected = tt.media.indices.toSet() }
+                        "查看下载" -> onOpenTasks()
                     }
-                }
-
-                Spacer(Modifier.height(14.dp))
-                SplitActionButton(
-                    label = if (st.selected.isEmpty()) "下载" else "下载 ${st.selected.size} 个",
-                    icon = Icons.Outlined.Send,
-                    onClick = { downloadSelected() },
-                    actions = listOf(
-                        ImageVector.vectorResource(R.drawable.ic_done_all) to "全选",
-                        Icons.Outlined.ArrowForward to "查看下载"
-                    ),
-                    onAction = { label ->
-                        when (label) {
-                            "全选" -> st.selected = t.media.indices.toSet()
-                            "查看下载" -> onOpenTasks()
-                        }
-                    },
-                    modifier = Modifier.fillMaxWidth()
-                )
-            }
+                },
+                modifier = Modifier.fillMaxWidth(),
+                enabled = st.tweet != null,
+                tonal = st.tweet == null
+            )
 
             // ---------------- 解析中：环形百分比
             if (st.loading) {
@@ -519,17 +527,8 @@ fun HomeScreen(
 
         SnackbarHost(
             hostState = snackbar,
-            modifier = Modifier.align(Alignment.BottomCenter).padding(bottom = 88.dp)
+            modifier = Modifier.align(Alignment.BottomCenter).padding(bottom = 24.dp)
         )
-
-        FloatingActionButton(
-            onClick = onOpenSettings,
-            modifier = Modifier.align(Alignment.BottomEnd).padding(end = 20.dp, bottom = 20.dp),
-            containerColor = MaterialTheme.colorScheme.secondaryContainer,
-            contentColor = MaterialTheme.colorScheme.onSecondaryContainer
-        ) {
-            Icon(Icons.Outlined.Menu, contentDescription = "设置")
-        }
     }
 }
 
