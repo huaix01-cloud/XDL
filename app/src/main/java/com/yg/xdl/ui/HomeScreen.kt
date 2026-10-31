@@ -245,15 +245,26 @@ fun HomeScreen(
 
             Spacer(Modifier.height(10.dp))
 
-            // ---------------- 解析结果
-            st.tweet?.let { t ->
-                Spacer(Modifier.height(12.dp))
-                ElevatedCard(
-                    modifier = Modifier.fillMaxWidth(),
-                    shape = RoundedCornerShape(20.dp)
-                ) {
+            // ---------------- 解析结果卡（6canvas：常驻占位，避免下面内容跳动）
+            Spacer(Modifier.height(12.dp))
+            ElevatedCard(
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(20.dp)
+            ) {
+                val t = st.tweet
+                if (t == null) {
+                    Box(
+                        Modifier.fillMaxWidth().height(180.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(
+                            "解析后在这里显示推文内容",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                } else {
                     Column(Modifier.padding(14.dp)) {
-                        // V5：媒体在上，文字与作者名在右下（contentAlign/textAlign = end）
                         if (t.media.isNotEmpty()) {
                             t.media.withIndex().toList().chunked(2).forEach { rowItems ->
                                 Row(
@@ -309,10 +320,7 @@ fun HomeScreen(
                         }
                     }
                 }
-
-                Spacer(Modifier.height(14.dp))
             }
-
             // ---------------- 链接输入（V5：框内只有图标，无占位文字）
             OutlinedTextField(
                 value = st.url,
@@ -436,19 +444,12 @@ fun HomeScreen(
 
             Spacer(Modifier.height(4.dp))
 
-            // ---------------- 平台(180) + 下载（V5：同一行，下载占剩余宽度）
+            // ---------------- 下载按钮（6canvas：画质下方靠右，平台选择已移到设置页）
             Row(
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(10.dp)
+                Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.End,
+                verticalAlignment = Alignment.CenterVertically
             ) {
-                SelectField(
-                    label = "平台",
-                    value = Settings.platform.label,
-                    options = Platform.entries.map { it.label },
-                    onSelect = { i -> Settings.updatePlatform(Platform.entries[i]) },
-                    selectedIndex = Platform.entries.indexOf(Settings.platform),
-                    modifier = Modifier.width(130.dp)
-                )
                 SplitActionButton(
                     label = "下载",
                     icon = Icons.Outlined.Send,
@@ -463,28 +464,10 @@ fun HomeScreen(
                             "查看下载" -> onOpenTasks()
                         }
                     },
-                    modifier = Modifier.weight(1f),
+                    modifier = Modifier.width(190.dp),
                     enabled = st.tweet != null,
                     tonal = st.tweet == null
                 )
-            }
-
-            if (Settings.platform != Platform.X) {
-                Spacer(Modifier.height(8.dp))
-                Surface(
-                    shape = MaterialTheme.shapes.medium,
-                    color = MaterialTheme.colorScheme.secondaryContainer,
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    Row(Modifier.padding(12.dp), verticalAlignment = Alignment.CenterVertically) {
-                        Icon(Icons.Outlined.Info, null, Modifier.size(18.dp))
-                        Spacer(Modifier.width(8.dp))
-                        Text(
-                            "${Settings.platform.label}：接口还没接，先做平台区分",
-                            style = MaterialTheme.typography.labelMedium
-                        )
-                    }
-                }
             }
 
             if (st.error.isNotBlank()) {
@@ -496,7 +479,7 @@ fun HomeScreen(
                 )
             }
 
-            // ---------------- 解析中：环形百分比（V5：左下角）
+            // ---------------- 解析中：环形百分比（6canvas：左下角）
             if (st.loading) {
                 Spacer(Modifier.height(16.dp))
                 RingProgress(progress = st.parseProgress, size = 60.dp, stroke = 5.dp)
