@@ -3,6 +3,7 @@ package com.yg.xdl.ui
 import androidx.compose.ui.res.vectorResource
 import com.yg.xdl.R
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -101,7 +102,8 @@ fun NetChip(modifier: Modifier = Modifier) {
     Surface(
         modifier = modifier.width(118.dp).heightIn(min = 32.dp),
         shape = RoundedCornerShape(50),
-        color = MaterialTheme.colorScheme.surfaceContainerHigh
+        color = Color.Transparent,
+        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline)
     ) {
         Row(
             modifier = Modifier.fillMaxWidth().padding(horizontal = 8.dp, vertical = 5.dp),

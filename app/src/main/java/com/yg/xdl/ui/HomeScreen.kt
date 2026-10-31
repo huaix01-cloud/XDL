@@ -34,6 +34,7 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.FilledTonalButton
+import androidx.compose.material3.FilledTonalIconButton
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -207,24 +208,26 @@ fun HomeScreen(
                 .verticalScroll(rememberScrollState())
                 .padding(horizontal = 16.dp)
         ) {
-            // ---------------- 顶栏
+            // ---------------- 顶栏（V5：只有 主题按钮 + XDL + vpn chip，没有代理开关）
             Row(
                 Modifier.fillMaxWidth().padding(top = 6.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                IconButton(
+                FilledTonalIconButton(
                     onClick = onToggleTheme,
-                    modifier = Modifier.onGloballyPositioned { c ->
-                        onThemePos(c.boundsInWindow().center)
-                    }
+                    modifier = Modifier
+                        .size(40.dp)
+                        .onGloballyPositioned { c -> onThemePos(c.boundsInWindow().center) }
                 ) {
                     Icon(
                         if (dark) ImageVector.vectorResource(R.drawable.ic_light_mode)
                         else ImageVector.vectorResource(R.drawable.ic_dark_mode),
                         contentDescription = "切换深色模式",
-                        tint = MaterialTheme.colorScheme.onSurfaceVariant
+                        modifier = Modifier.size(20.dp),
+                        tint = MaterialTheme.colorScheme.onSecondaryContainer
                     )
                 }
+                Spacer(Modifier.width(10.dp))
                 AssistChip(
                     onClick = { },
                     label = {
@@ -237,21 +240,6 @@ fun HomeScreen(
                 )
                 Spacer(Modifier.weight(1f))
                 NetChip()
-                Spacer(Modifier.width(8.dp))
-                Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                    // V5：只是状态指示，不能点
-                    Switch(
-                        checked = NetWatch.hasProxy,
-                        onCheckedChange = null,
-                        enabled = false,
-                        modifier = Modifier.size(width = 46.dp, height = 30.dp)
-                    )
-                    Text(
-                        "代理",
-                        style = MaterialTheme.typography.labelSmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                }
             }
 
             Spacer(Modifier.height(10.dp))
