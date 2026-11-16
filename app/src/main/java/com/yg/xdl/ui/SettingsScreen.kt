@@ -111,8 +111,7 @@ fun SettingsScreen(onBack: () -> Unit) {
                     Modifier
                         .fillMaxWidth()
                         .statusBarsPadding()
-                        .height(64.dp)
-                        .padding(horizontal = 10.dp),
+                        .padding(horizontal = 10.dp, vertical = 12.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Box(
