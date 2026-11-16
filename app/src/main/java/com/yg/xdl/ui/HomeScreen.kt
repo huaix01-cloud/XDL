@@ -32,6 +32,7 @@ import androidx.compose.material3.Checkbox
 import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.SnackbarHost
@@ -58,6 +59,7 @@ import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.vectorResource
+import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
@@ -206,7 +208,7 @@ fun HomeScreen(
             Surface(
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(0.dp),
-                color = MaterialTheme.colorScheme.primaryContainer
+                color = MaterialTheme.colorScheme.surfaceContainerLow
             ) {
                 Row(
                     Modifier
@@ -226,20 +228,24 @@ fun HomeScreen(
                             else ImageVector.vectorResource(R.drawable.ic_dark_mode),
                             contentDescription = "切换主题",
                             modifier = Modifier.size(22.dp),
-                            tint = MaterialTheme.colorScheme.onPrimaryContainer
+                            tint = MaterialTheme.colorScheme.onSurface
                         )
                     }
                     Spacer(Modifier.width(6.dp))
                     Text(
                         "XDL",
-                        style = MaterialTheme.typography.headlineSmall,
+                        style = MaterialTheme.typography.headlineSmall.copy(fontFamily = FontFamily.Serif),
                         fontWeight = FontWeight.Bold,
-                        color = MaterialTheme.colorScheme.onPrimaryContainer
+                        color = MaterialTheme.colorScheme.onSurface
                     )
                     Spacer(Modifier.weight(1f))
                     TopBarNetChip()
                 }
             }
+            HorizontalDivider(
+                thickness = 1.dp,
+                color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.6f)
+            )
 
             // ---------------- 内容
             Column(
@@ -256,12 +262,13 @@ fun HomeScreen(
                 HorizontalPager(
                     state = pagerState,
                     modifier = Modifier.fillMaxWidth().height(180.dp),
+                    contentPadding = PaddingValues(start = 0.dp, end = 44.dp),
                     pageSpacing = 10.dp
                 ) { page ->
                     Surface(
                         modifier = Modifier.fillMaxSize(),
-                        shape = RoundedCornerShape(28.dp),
-                        color = MaterialTheme.colorScheme.surfaceContainerHigh
+                        shape = RoundedCornerShape(22.dp),
+                        color = MaterialTheme.colorScheme.primaryContainer
                     ) {
                         if (media.isEmpty()) {
                             Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
@@ -327,7 +334,7 @@ fun HomeScreen(
                     value = st.url,
                     onValueChange = { st.url = it },
                     modifier = Modifier.fillMaxWidth(),
-                    placeholder = { Text("粘贴在此处") },
+                    label = { Text("粘贴在此处") },
                     leadingIcon = {
                         Icon(ImageVector.vectorResource(R.drawable.ic_article), contentDescription = null)
                     },
@@ -338,9 +345,9 @@ fun HomeScreen(
 
                 Spacer(Modifier.height(10.dp))
 
-                // 粘贴 / 清空 / 解析·下载
+                // 粘贴 / 清空（filled）· 解析/下载（tonal）
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    FilledTonalButton(
+                    Button(
                         onClick = {
                             val t = clipboard.getText()?.text
                             if (!t.isNullOrBlank()) st.url = t
@@ -351,7 +358,7 @@ fun HomeScreen(
                     ) {
                         Text("粘贴", style = MaterialTheme.typography.labelLarge, maxLines = 1)
                     }
-                    FilledTonalButton(
+                    Button(
                         onClick = {
                             st.url = ""
                             st.tweet = null
@@ -365,16 +372,12 @@ fun HomeScreen(
                     ) {
                         Text("清空", style = MaterialTheme.typography.labelLarge, maxLines = 1)
                     }
-                    Button(
+                    FilledTonalButton(
                         onClick = { analyzeOrDownload() },
                         enabled = !st.loading,
                         shape = MaterialTheme.shapes.medium,
-                        modifier = Modifier.weight(1.5f),
-                        contentPadding = PaddingValues(horizontal = 6.dp, vertical = 14.dp),
-                        colors = ButtonDefaults.buttonColors(
-                            containerColor = MaterialTheme.colorScheme.secondaryContainer,
-                            contentColor = MaterialTheme.colorScheme.onSecondaryContainer
-                        )
+                        modifier = Modifier.weight(1.6f),
+                        contentPadding = PaddingValues(horizontal = 6.dp, vertical = 14.dp)
                     ) {
                         Icon(
                             ImageVector.vectorResource(R.drawable.ic_arrow_downward),
@@ -390,40 +393,7 @@ fun HomeScreen(
                     }
                 }
 
-                Spacer(Modifier.height(12.dp))
-
-                // 视频画质 + 保持最佳
-                Row(
-                    verticalAlignment = Alignment.Top,
-                    horizontalArrangement = Arrangement.spacedBy(10.dp)
-                ) {
-                    SelectField(
-                        label = "",
-                        value = "",
-                        options = Quality.entries.map { it.label },
-                        onSelect = { i -> Settings.updateQuality(Quality.entries[i]) },
-                        selectedIndex = Quality.entries.indexOf(Settings.quality),
-                        modifier = Modifier.width(157.dp),
-                        enabled = !Settings.keepBest,
-                        leadingIcon = Icons.Filled.PlayArrow,
-                        supporting = "视频画质"
-                    )
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        modifier = Modifier.weight(1f).padding(top = 6.dp)
-                    ) {
-                        Checkbox(
-                            checked = Settings.keepBest,
-                            onCheckedChange = { Settings.updateKeepBest(it) }
-                        )
-                        Text(
-                            "保持选择最佳画质",
-                            style = MaterialTheme.typography.labelSmall,
-                            maxLines = 2,
-                            lineHeight = 14.sp
-                        )
-                    }
-                }
+                // 设计稿里首页没有画质选择与状态行；画质固定「保持最佳」，可在设置页调整
 
                 if (st.error.isNotBlank()) {
                     Spacer(Modifier.height(10.dp))
@@ -459,7 +429,7 @@ fun HomeScreen(
 private fun TopBarNetChip() {
     val hasProxy = NetWatch.hasProxy
     val ms = if (NetWatch.apiMillis > 0) "${NetWatch.apiMillis}ms" else "---"
-    val fg = MaterialTheme.colorScheme.onPrimaryContainer
+    val fg = MaterialTheme.colorScheme.onSurfaceVariant
     Surface(
         modifier = Modifier.width(112.dp).height(32.dp),
         shape = RoundedCornerShape(50),

@@ -27,6 +27,7 @@ import androidx.compose.material3.AssistChip
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LinearProgressIndicator
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
@@ -79,7 +80,7 @@ fun TasksScreen(onBack: () -> Unit) {
             Surface(
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(0.dp),
-                color = MaterialTheme.colorScheme.primaryContainer
+                color = MaterialTheme.colorScheme.surfaceContainerLow
             ) {
                 Row(
                     Modifier
@@ -99,7 +100,7 @@ fun TasksScreen(onBack: () -> Unit) {
                             ImageVector.vectorResource(R.drawable.ic_download),
                             contentDescription = null,
                             modifier = Modifier.size(22.dp),
-                            tint = MaterialTheme.colorScheme.onPrimaryContainer
+                            tint = MaterialTheme.colorScheme.onSurface
                         )
                     }
                     Spacer(Modifier.width(10.dp))
@@ -107,7 +108,7 @@ fun TasksScreen(onBack: () -> Unit) {
                         "下载",
                         style = MaterialTheme.typography.headlineSmall,
                         fontWeight = FontWeight.Bold,
-                        color = MaterialTheme.colorScheme.onPrimaryContainer
+                        color = MaterialTheme.colorScheme.onSurface
                     )
                     Spacer(Modifier.weight(1f))
                     Text(
@@ -247,7 +248,7 @@ private fun TaskCard(
                             ImageVector.vectorResource(R.drawable.ic_download),
                             contentDescription = null,
                             modifier = Modifier.size(20.dp),
-                            tint = MaterialTheme.colorScheme.onPrimaryContainer
+                            tint = MaterialTheme.colorScheme.onSurface
                         )
                     }
                 }

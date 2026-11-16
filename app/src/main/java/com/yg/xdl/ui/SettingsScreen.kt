@@ -30,6 +30,7 @@ import androidx.compose.material3.Checkbox
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.RadioButton
@@ -105,7 +106,7 @@ fun SettingsScreen(onBack: () -> Unit) {
             Surface(
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(0.dp),
-                color = MaterialTheme.colorScheme.primaryContainer
+                color = MaterialTheme.colorScheme.surfaceContainerLow
             ) {
                 Row(
                     Modifier
@@ -125,7 +126,7 @@ fun SettingsScreen(onBack: () -> Unit) {
                             Icons.Outlined.Settings,
                             contentDescription = null,
                             modifier = Modifier.size(22.dp),
-                            tint = MaterialTheme.colorScheme.onPrimaryContainer
+                            tint = MaterialTheme.colorScheme.onSurface
                         )
                     }
                     Spacer(Modifier.width(10.dp))
@@ -133,7 +134,7 @@ fun SettingsScreen(onBack: () -> Unit) {
                         "设置",
                         style = MaterialTheme.typography.headlineSmall,
                         fontWeight = androidx.compose.ui.text.font.FontWeight.Bold,
-                        color = MaterialTheme.colorScheme.onPrimaryContainer
+                        color = MaterialTheme.colorScheme.onSurface
                     )
                 }
             }
