@@ -12,7 +12,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.systemBarsPadding
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
@@ -98,23 +98,47 @@ fun SettingsScreen(onBack: () -> Unit) {
         Column(
             Modifier
                 .fillMaxSize()
-                .systemBarsPadding()
                 .verticalScroll(rememberScrollState())
                 .padding(horizontal = 16.dp)
         ) {
-            Spacer(Modifier.height(6.dp))
-
-            // 顶栏：只有「设置」chip（6canvas 里没有返回箭头，返回靠右下 FAB）
-            AssistChip(
-                onClick = { },
-                label = { Text("设置", style = MaterialTheme.typography.titleMedium) },
-                leadingIcon = {
-                    Icon(Icons.Outlined.Settings, null, Modifier.size(18.dp))
+            // topAppBar（和首页/下载页同款）
+            Surface(
+                modifier = Modifier.fillMaxWidth().statusBarsPadding().height(64.dp),
+                shape = RoundedCornerShape(
+                    topStart = 40.dp, topEnd = 40.dp,
+                    bottomStart = 7.dp, bottomEnd = 7.dp
+                ),
+                color = MaterialTheme.colorScheme.primaryContainer
+            ) {
+                Row(
+                    Modifier.fillMaxSize().padding(horizontal = 10.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Box(
+                        Modifier
+                            .size(44.dp)
+                            .clip(CircleShape)
+                            .background(MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.12f)),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Icon(
+                            Icons.Outlined.Settings,
+                            contentDescription = null,
+                            modifier = Modifier.size(22.dp),
+                            tint = MaterialTheme.colorScheme.onPrimaryContainer
+                        )
+                    }
+                    Spacer(Modifier.width(10.dp))
+                    Text(
+                        "设置",
+                        style = MaterialTheme.typography.headlineSmall,
+                        fontWeight = androidx.compose.ui.text.font.FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.onPrimaryContainer
+                    )
                 }
-            )
+            }
 
             Spacer(Modifier.height(10.dp))
-
             // ---------------- 列表容器
             Surface(
                 modifier = Modifier.fillMaxWidth(),
@@ -283,21 +307,6 @@ fun SettingsScreen(onBack: () -> Unit) {
             Spacer(Modifier.height(150.dp))
         }
 
-        // 返回 FAB（6canvas：右下角）
-        FloatingActionButton(
-            onClick = onBack,
-            modifier = Modifier
-                .align(Alignment.BottomEnd)
-                .padding(end = 20.dp, bottom = 24.dp),
-            containerColor = MaterialTheme.colorScheme.secondaryContainer,
-            contentColor = MaterialTheme.colorScheme.onSecondaryContainer
-        ) {
-            Icon(
-                ImageVector.vectorResource(R.drawable.ic_arrow_downward),
-                contentDescription = "返回",
-                modifier = Modifier.size(24.dp).rotate(180f)
-            )
-        }
     }
 
     // ---------------- 最大下载数量

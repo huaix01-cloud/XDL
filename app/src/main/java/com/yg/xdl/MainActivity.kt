@@ -33,18 +33,30 @@ import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.systemBarsPadding
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.NavigationBarItem
+import androidx.compose.material3.Text
+import androidx.compose.material3.NavigationBar
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.Settings
+import androidx.compose.material3.Icon
 import androidx.compose.material3.Surface
+import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.res.vectorResource
 import com.yg.xdl.ui.HomeScreen
 import com.yg.xdl.ui.HomeState
 import com.yg.xdl.ui.SettingsScreen
@@ -411,7 +423,7 @@ fun App(incoming: MutableState<String?>) {
     val ctx = androidx.compose.ui.platform.LocalContext.current
     val activity = ctx as? MainActivity
     var themeBtnPos by remember { mutableStateOf(androidx.compose.ui.geometry.Offset.Zero) }
-    var route by rememberSaveable { mutableStateOf("home") }
+    var tab by rememberSaveable { mutableIntStateOf(0) }
     // 放在 App 里，切页面不会丢解析结果
     val homeState = remember { HomeState() }
 
@@ -421,76 +433,106 @@ fun App(incoming: MutableState<String?>) {
         ThemeMode.SYSTEM -> isSystemInDarkTheme()
     }
 
-    BackHandler(enabled = route != "home") { route = "home" }
+    // 底部导航：0 首页 / 1 下载 / 2 设置（新版设计用 bottomNav 替代 FAB）
+    BackHandler(enabled = tab != 0) { tab = 0 }
 
-    Surface(
-        // 背景铺满整块屏幕（含状态栏/导航栏后面），内容各自加 systemBarsPadding，
-        // 这样浅色主题下状态栏区域也是浅色，不会露出窗口底色
+    Scaffold(
         modifier = Modifier.fillMaxSize(),
-        color = MaterialTheme.colorScheme.background
-    ) {
+        containerColor = MaterialTheme.colorScheme.background,
+        bottomBar = {
+            NavigationBar(containerColor = MaterialTheme.colorScheme.surfaceContainer) {
+                NavigationBarItem(
+                    selected = tab == 0,
+                    onClick = { tab = 0 },
+                    icon = {
+                        Icon(
+                            ImageVector.vectorResource(R.drawable.ic_article),
+                            contentDescription = null
+                        )
+                    },
+                    label = { Text("首页") }
+                )
+                NavigationBarItem(
+                    selected = tab == 1,
+                    onClick = { tab = 1 },
+                    icon = {
+                        Icon(
+                            ImageVector.vectorResource(R.drawable.ic_download),
+                            contentDescription = null
+                        )
+                    },
+                    label = { Text("下载") }
+                )
+                NavigationBarItem(
+                    selected = tab == 2,
+                    onClick = { tab = 2 },
+                    icon = { Icon(Icons.Outlined.Settings, contentDescription = null) },
+                    label = { Text("设置") }
+                )
+            }
+        }
+    ) { pad ->
         AnimatedContent(
-            targetState = route,
+            targetState = tab,
             transitionSpec = {
                 when (targetState) {
-                    // 设置页：从按钮位置"弹"出来，缩放 + 轻微上浮，阻尼低才看得出回弹
-                    "settings" -> (
+                    2 -> (
                         scaleIn(
                             initialScale = 0.82f,
                             animationSpec = spring(dampingRatio = 0.60f, stiffness = 420f)
                         ) + slideInVertically(
                             animationSpec = spring(dampingRatio = 0.62f, stiffness = 420f)
                         ) { it / 14 } + fadeIn(tween(150))
-                    ).togetherWith(fadeOut(tween(110)))
-                    // 下载页：从右滑入，弹簧会滑过头再回位
-                    "tasks" -> (
+                        ).togetherWith(fadeOut(tween(110)))
+                    1 -> (
                         slideInHorizontally(
                             animationSpec = spring(dampingRatio = 0.66f, stiffness = 400f)
                         ) { it } + fadeIn(tween(140))
-                    ).togetherWith(
-                        slideOutHorizontally(
-                            animationSpec = tween(220, easing = FastOutSlowInEasing)
-                        ) { -it / 6 } + fadeOut(tween(110))
-                    )
-                    // 回主页：轻放大 + 淡入，尾巴收得软一点
+                        ).togetherWith(
+                            slideOutHorizontally(
+                                animationSpec = tween(220, easing = FastOutSlowInEasing)
+                            ) { -it / 6 } + fadeOut(tween(110))
+                        )
                     else -> (
                         fadeIn(tween(170)) + scaleIn(
                             initialScale = 0.90f,
                             animationSpec = spring(dampingRatio = 0.58f, stiffness = 360f)
                         )
-                    ).togetherWith(fadeOut(tween(130)))
+                        ).togetherWith(fadeOut(tween(130)))
                 }
             },
-            label = "screen"
+            label = "tab"
         ) { r ->
-            when (r) {
-                "home" -> HomeScreen(
-                    st = homeState,
-                    incoming = incoming.value,
-                    onConsumedIncoming = { incoming.value = null },
-                    dark = dark,
-                    onToggleTheme = {
-                        val target = when {
-                            Settings.theme == ThemeMode.SYSTEM ->
-                                if (dark) ThemeMode.LIGHT else ThemeMode.DARK
-                            Settings.theme == ThemeMode.LIGHT -> ThemeMode.DARK
-                            else -> ThemeMode.LIGHT
-                        }
-                        if (activity != null && themeBtnPos != androidx.compose.ui.geometry.Offset.Zero) {
-                            activity.switchThemeWithReveal(
-                                themeBtnPos.x, themeBtnPos.y, target,
-                                fromDark = dark, toDark = target == ThemeMode.DARK
-                            )
-                        } else {
-                            Settings.updateTheme(target)
-                        }
-                    },
-                    onOpenTasks = { route = "tasks" },
-                    onOpenSettings = { route = "settings" },
-                    onThemePos = { themeBtnPos = it }
-                )
-                "tasks" -> TasksScreen(onBack = { route = "home" })
-                else -> SettingsScreen(onBack = { route = "home" })
+            Box(Modifier.fillMaxSize().padding(pad)) {
+                when (r) {
+                    0 -> HomeScreen(
+                        st = homeState,
+                        incoming = incoming.value,
+                        onConsumedIncoming = { incoming.value = null },
+                        dark = dark,
+                        onToggleTheme = {
+                            val target = when {
+                                Settings.theme == ThemeMode.SYSTEM ->
+                                    if (dark) ThemeMode.LIGHT else ThemeMode.DARK
+                                Settings.theme == ThemeMode.LIGHT -> ThemeMode.DARK
+                                else -> ThemeMode.LIGHT
+                            }
+                            if (activity != null && themeBtnPos != androidx.compose.ui.geometry.Offset.Zero) {
+                                activity.switchThemeWithReveal(
+                                    themeBtnPos.x, themeBtnPos.y, target,
+                                    fromDark = dark, toDark = target == ThemeMode.DARK
+                                )
+                            } else {
+                                Settings.updateTheme(target)
+                            }
+                        },
+                        onOpenTasks = { tab = 1 },
+                        onOpenSettings = { tab = 2 },
+                        onThemePos = { themeBtnPos = it }
+                    )
+                    1 -> TasksScreen(onBack = { tab = 0 })
+                    else -> SettingsScreen(onBack = { tab = 0 })
+                }
             }
         }
     }

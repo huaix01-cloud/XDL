@@ -4,14 +4,9 @@
     android:height="108dp"
     android:viewportWidth="108"
     android:viewportHeight="108">
-    <!-- Android 13+ 主题图标（单色，系统着色） -->
     <path
-        android:fillColor="#FFFFFFFF"
-        android:pathData="M50,20h8v26h-8z" />
-    <path
-        android:fillColor="#FFFFFFFF"
-        android:pathData="M54,68L30,44l5.7,-5.7 18.3,18.3 18.3,-18.3 5.7,5.7z" />
-    <path
-        android:fillColor="#FFFFFFFF"
-        android:pathData="M34,76h40v7h-40z" />
+        android:strokeColor="#FFFFFFFF"
+        android:strokeWidth="13"
+        android:strokeLineCap="round"
+        android:pathData="M31,31 L77,77 M77,31 L31,77" />
 </vector>
