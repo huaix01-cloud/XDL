@@ -77,15 +77,16 @@ fun TasksScreen(onBack: () -> Unit) {
 
             // topAppBar
             Surface(
-                modifier = Modifier.fillMaxWidth().statusBarsPadding().height(64.dp),
-                shape = RoundedCornerShape(
-                    topStart = 40.dp, topEnd = 40.dp,
-                    bottomStart = 7.dp, bottomEnd = 7.dp
-                ),
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(0.dp),
                 color = MaterialTheme.colorScheme.primaryContainer
             ) {
                 Row(
-                    Modifier.fillMaxSize().padding(horizontal = 10.dp),
+                    Modifier
+                        .fillMaxWidth()
+                        .statusBarsPadding()
+                        .height(64.dp)
+                        .padding(horizontal = 10.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Box(
